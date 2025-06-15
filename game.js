@@ -1905,4 +1905,20 @@ document.addEventListener("DOMContentLoaded", () => {
             playerData.gamesPlayed = Number(playerHistory.gamesPlayed);
             playerData.totalRewards = Number(ethers.utils.formatUnits(playerHistory.totalRewards, 18));
             playerData.totalReferrals = Number(playerHistory.totalReferrals);
-            playerData.referralPoints = Number(ethers.utils.format
+            playerData.referralPoints = Number(ethers.utils.formatUnits(playerHistory.referralRewards, 18));
+            playerData.hasClaimedWelcomeBonus = playerHistory.hasClaimedWelcomeBonus;
+            playerData.pendingPoints = Number(ethers.utils.formatUnits(playerHistory.internalBalance, 18));
+            playerData.flexibleStakeBalance = Number(ethers.utils.formatUnits(playerHistory.flexibleStakeBalance, 18));
+
+            for (let i = 0; i <= 3; i++) {
+                const balance = await contract.getLockedStakeBalance(account, i);
+                const startTime = await contract.getLockedStakeStartTime(account, i);
+                playerData.lockedStakeBalances[i] = Number(ethers.utils.formatUnits(balance, 18));
+                playerData.lockedStakeStartTimes[i] = Number(startTime) * 1000;
+            }
+
+            const walletBalance = await contract.balanceOf(account);
+            playerData.walletBalance = Number(ethers.utils.formatUnits(walletBalance, 18));
+
+            const onChainRewards = await contract.getRewardHistory(account);
+            onChainRewards.forEach(reward => {
