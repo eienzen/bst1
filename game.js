@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Contract configuration
-    const CONTRACT_ADDRESS = "0x846cf1087f7805D95aFbc8F37156b577679dB11C"; // Updated to match transaction
+    const CONTRACT_ADDRESS = "0xb9384B2A1E6b6C989B04Be35000F29031975c727"; // Updated to match transaction
     const GAME_ORACLE_ADDRESS = "0x6C12d2802cCF7072e9ED33b3bdBB0ce4230d5032";
     const CONTRACT_ABI = [
 	{
