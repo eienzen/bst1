@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockSnakes Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #gameCanvas {
+            border: 2px solid #000;
+            background-color: #fff;
+        }
+        #gameContainer {
+            text-align: center;
+        }
+        #score, #highScore, #bstPoints {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+        #connectWallet, #claimBonus, #convertPoints, #stakeTokens, #unstakeTokens, #playAgain {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #connectWallet:disabled, #claimBonus:disabled, #convertPoints:disabled, #stakeTokens:disabled, #unstakeTokens:disabled, #playAgain:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #welcomeMessage {
+            font-size: 20px;
+            color: #333;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="welcomeMessage"></div>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <div id="score">Score: 0</div>
+        <div id="highScore">High Score: 0</div>
+        <div id="bstPoints">BST Points: 0</div>
+        <button id="connectWallet">Connect Wallet</button>
+        <button id="claimBonus" disabled>Claim Welcome Bonus</button>
+        <button id="convertPoints" disabled>Convert Points to Tokens</button>
+        <button id="stakeTokens" disabled>Stake Tokens</button>
+        <button id="unstakeTokens" disabled>Unstake Tokens</button>
+        <button id="playAgain" style="display: none;">Play Again</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
