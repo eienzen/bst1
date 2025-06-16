@@ -1410,11 +1410,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		"stateMutability": "view",
 		"type": "function"
 	}
-],
-            "stateMutability": "view",
-            "type": "function"
-        }
-    ];
+];
 
     let gameOracleProvider;
     try {
