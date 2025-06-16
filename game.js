@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
         playerData.pendingReferral = referrerAddress;
     }
 
-    const CONTRACT_ADDRESS = "0xc05697BA9841Bd09f5F41BaDD121d3c29B20642A"; // Update after deployment
+    const CONTRACT_ADDRESS = "0xD2d5e0566C11878CeEac45e1A19B0c73CBd2161a"; // Update with new address
     const CONTRACT_ABI = [
 	{
 		"inputs": [
@@ -1410,7 +1410,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		"stateMutability": "view",
 		"type": "function"
 	}
-];
+]; // Update with new ABI from Remix
 
     let gameOracleProvider;
     try {
@@ -1591,13 +1591,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (finalPoints) finalPoints.textContent = `Earned Points: ${gamePoints.toFixed(2)} BST Points`;
         popup.style.display = "block";
         isGameRunning = false;
-        const closePopup = document.getElementById("closePopup");
-        if (closePopup) {
-            closePopup.onclick = () => {
-                popup.style.display = "none";
-                resetGame().catch(err => console.error("Error resetting game:", err));
-            };
-        }
     }
 
     async function resetGame() {
@@ -1862,4 +1855,353 @@ document.addEventListener("DOMContentLoaded", () => {
     function disconnectWallet() {
         account = null;
         contract = null;
-        const connectWalletBtn =
+        playerData.walletAddress = null;
+        playerData.walletBalance = 0;
+        const connectWalletBtn = document.getElementById("connectWallet");
+        const disconnectWalletBtn = document.getElementById("disconnectWallet");
+        if (connectWalletBtn) connectWalletBtn.style.display = "block";
+        if (disconnectWalletBtn) disconnectWalletBtn.style.display = "none";
+        const walletAddressElement = document.getElementById("walletAddress");
+        if (walletAddressElement) walletAddressElement.textContent = "Wallet: Not Connected";
+        updatePlayerHistoryUI();
+        localStorage.setItem("playerData", JSON.stringify(playerData));
+        alert("Wallet disconnected!");
+    }
+
+    async function loadPlayerHistory() {
+        if (!contract || !account) return;
+        try {
+            const history = await contract.playerHistory(account);
+            playerData.gamesPlayed = Number(history.gamesPlayed);
+            playerData.totalRewards = Number(ethers.utils.formatUnits(history.totalRewards, 18));
+            playerData.totalReferrals = Number(history.totalReferrals);
+            playerData.referralPoints = Number(ethers.utils.formatUnits(history.referralRewards, 18));
+            playerData.hasClaimedWelcomeBonus = history.hasClaimedWelcomeBonus;
+            playerData.pendingPoints = Number(ethers.utils.formatUnits(await contract.getInternalBalance(account), 18));
+            playerData.flexibleStakeBalance = Number(ethers.utils.formatUnits(history.flexibleStakeBalance, 18));
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
+
+            for (let i = 1; i <= 3; i++) {
+                playerData.lockedStakeBalances[i] = Number(ethers.utils.formatUnits(await contract.getLockedStakeBalance(account, i), 18));
+                playerData.lockedStakeStartTimes[i] = Number(await contract.getLockedStakeStartTime(account, i));
+            }
+
+            const rewards = await contract.getRewardHistory(account);
+            playerData.rewardHistory = rewards.map(reward => ({
+                amount: Number(ethers.utils.formatUnits(reward.amount, 18)),
+                timestamp: Number(reward.timestamp) * 1000,
+                rewardType: reward.rewardType,
+                referee: reward.referee
+            }));
+        } catch (error) {
+            console.error("Error loading player history:", error);
+        }
+    }
+
+    function updatePlayerHistoryUI() {
+        document.getElementById("gamesPlayed").textContent = `Games Played: ${playerData.gamesPlayed || 0}`;
+        document.getElementById("totalPoints").textContent = `Total Points: ${(playerData.totalPoints || 0).toFixed(2)} BST Points`;
+        document.getElementById("totalRewards").textContent = `Total Rewards: ${(playerData.totalRewards || 0).toFixed(2)} BST Tokens`;
+        document.getElementById("totalReferrals").textContent = `Total Referrals: ${playerData.totalReferrals || 0}`;
+        document.getElementById("referralPoints").textContent = `Referral Points: ${(playerData.referralPoints || 0).toFixed(2)} BST Points`;
+        document.getElementById("walletBalance").textContent = `Wallet Balance: ${(playerData.walletBalance || 0).toFixed(2)} BST Tokens`;
+        document.getElementById("flexibleStakeBalance").textContent = `Flexible Stake Balance: ${(playerData.flexibleStakeBalance || 0).toFixed(2)} BST Tokens`;
+        document.getElementById("lockedStakeBalance").textContent = `Locked Stake Balances: 60 Days: ${(playerData.lockedStakeBalances[1] || 0).toFixed(2)}, 180 Days: ${(playerData.lockedStakeBalances[2] || 0).toFixed(2)}, 365 Days: ${(playerData.lockedStakeBalances[3] || 0).toFixed(2)}`;
+
+        const rewardHistory = document.getElementById("rewardHistory");
+        rewardHistory.innerHTML = "";
+        playerData.rewardHistory.forEach(reward => {
+            const li = document.createElement("li");
+            li.textContent = `${reward.rewardType}: ${reward.amount.toFixed(2)} BST at ${new Date(reward.timestamp).toLocaleString()} (Referee: ${reward.referee})`;
+            rewardHistory.appendChild(li);
+        });
+
+        const taskHistory = document.getElementById("taskHistory");
+        taskHistory.innerHTML = "";
+        playerData.taskHistory.forEach(task => {
+            const li = document.createElement("li");
+            li.textContent = `${task.taskType}: ${task.amount.toFixed(2)} BST Points at ${new Date(task.timestamp).toLocaleString()}`;
+            taskHistory.appendChild(li);
+        });
+
+        const stakingHistory = document.getElementById("stakingHistory");
+        stakingHistory.innerHTML = "";
+        playerData.stakingHistory.forEach(stake => {
+            const li = document.createElement("li");
+            li.textContent = `${stake.action}: ${stake.amount.toFixed(2)} BST Tokens (Lock Period: ${stake.lockPeriod}) at ${new Date(stake.timestamp).toLocaleString()}`;
+            stakingHistory.appendChild(li);
+        });
+    }
+
+    async function mintTokens() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const amount = parseFloat(document.getElementById("mintAmount").value) || 0;
+        const key = document.getElementById("mintKey").value;
+        if (amount <= 0) return alert("Enter a valid amount!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const amountInWei = ethers.utils.parseUnits(amount.toString(), 18);
+            const tx = await contract.mintTokens(amountInWei, key, { gasLimit: 500000 });
+            await tx.wait();
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
+            updatePlayerHistoryUI();
+            alert(`${amount} BST Tokens minted successfully!`);
+        } catch (error) {
+            console.error("Error minting tokens:", error);
+            alert("Failed to mint tokens: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function burnTokens() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const amount = parseFloat(document.getElementById("burnAmount").value) || 0;
+        const key = document.getElementById("burnKey").value;
+        if (amount <= 0) return alert("Enter a valid amount!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const amountInWei = ethers.utils.parseUnits(amount.toString(), 18);
+            const tx = await contract.burnTokens(amountInWei, key, { gasLimit: 500000 });
+            await tx.wait();
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
+            updatePlayerHistoryUI();
+            alert(`${amount} BST Tokens burned successfully!`);
+        } catch (error) {
+            console.error("Error burning tokens:", error);
+            alert("Failed to burn tokens: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function updateWelcomeBonus() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const newBonus = parseFloat(document.getElementById("newWelcomeBonus").value) || 0;
+        const key = document.getElementById("welcomeBonusKey").value;
+        if (newBonus <= 0) return alert("Enter a valid bonus amount!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const newBonusInWei = ethers.utils.parseUnits(newBonus.toString(), 18);
+            const tx = await contract.updateWelcomeBonus(newBonusInWei, key, { gasLimit: 200000 });
+            await tx.wait();
+            alert(`Welcome bonus updated to ${newBonus} BST Points!`);
+        } catch (error) {
+            console.error("Error updating welcome bonus:", error);
+            alert("Failed to update welcome bonus: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function updateReferralCommissionRate() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const newRate = parseFloat(document.getElementById("newReferralRate").value) || 0;
+        const key = document.getElementById("referralRateKey").value;
+        if (newRate <= 0) return alert("Enter a valid rate!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const newRateInWei = ethers.utils.parseUnits(newRate.toString(), 18);
+            const tx = await contract.updateReferralCommissionRate(newRateInWei, key, { gasLimit: 200000 });
+            await tx.wait();
+            alert(`Referral commission rate updated to ${newRate}!`);
+        } catch (error) {
+            console.error("Error updating referral commission rate:", error);
+            alert("Failed to update referral rate: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function updateWithdrawalFee() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const newFee = parseFloat(document.getElementById("newWithdrawalFee").value) || 0;
+        const key = document.getElementById("withdrawalFeeKey").value;
+        if (newFee <= 0) return alert("Enter a valid fee!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const newFeeInWei = ethers.utils.parseUnits(newFee.toString(), "ether");
+            const tx = await contract.updateWithdrawalFee(newFeeInWei, key, { gasLimit: 200000 });
+            await tx.wait();
+            WITHDRAWAL_FEE_BNB = ethers.utils.formatUnits(await contract.withdrawalFeeInBnb(), "ether");
+            alert(`Withdrawal fee updated to ${newFee} BNB!`);
+        } catch (error) {
+            console.error("Error updating withdrawal fee:", error);
+            alert("Failed to update withdrawal fee: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function updateMaxConversionLimit() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const newLimit = parseFloat(document.getElementById("newMaxConversionLimit").value) || 0;
+        const key = document.getElementById("maxConversionLimitKey").value;
+        if (newLimit <= 0) return alert("Enter a valid limit!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const newLimitInWei = ethers.utils.parseUnits(newLimit.toString(), 18);
+            const tx = await contract.updateMaxConversionLimit(newLimitInWei, key, { gasLimit: 200000 });
+            await tx.wait();
+            MAX_CONVERSION_LIMIT = Number(ethers.utils.formatUnits(await contract.maxConversionLimit(), 18));
+            alert(`Max conversion limit updated to ${newLimit} BST Points!`);
+        } catch (error) {
+            console.error("Error updating max conversion limit:", error);
+            alert("Failed to update max conversion limit: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function updateConversionRatio() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const newRatio = parseFloat(document.getElementById("newConversionRatio").value) || 0;
+        const key = document.getElementById("conversionRatioKey").value;
+        if (newRatio <= 0) return alert("Enter a valid ratio!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const newRatioInWei = ethers.utils.parseUnits(newRatio.toString(), 18);
+            const tx = await contract.updateConversionRatio(newRatioInWei, key, { gasLimit: 200000 });
+            await tx.wait();
+            CONVERSION_RATIO = Number(ethers.utils.formatUnits(await contract.conversionRatio(), 18));
+            alert(`Conversion ratio updated to ${newRatio}!`);
+        } catch (error) {
+            console.error("Error updating conversion ratio:", error);
+            alert("Failed to update conversion ratio: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function updateLockReward() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const period = parseInt(document.getElementById("lockRewardPeriod").value);
+        const newRate = parseFloat(document.getElementById("newLockRewardRate").value) || 0;
+        const key = document.getElementById("lockRewardKey").value;
+        if (newRate < 0) return alert("Enter a valid rate!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const newRateInWei = ethers.utils.parseUnits(newRate.toString(), 18);
+            const tx = await contract.updateLockReward(period, newRateInWei, key, { gasLimit: 200000 });
+            await tx.wait();
+            alert(`Lock reward for period ${period} updated to ${newRate}!`);
+        } catch (error) {
+            console.error("Error updating lock reward:", error);
+            alert("Failed to update lock reward: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function updateGameOracle() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const newOracle = document.getElementById("newGameOracle").value;
+        const key = document.getElementById("gameOracleKey").value;
+        if (!ethers.utils.isAddress(newOracle)) return alert("Enter a valid address!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const tx = await contract.updateGameOracle(newOracle, key, { gasLimit: 200000 });
+            await tx.wait();
+            alert(`Game oracle updated to ${newOracle}!`);
+        } catch (error) {
+            console.error("Error updating game oracle:", error);
+            alert("Failed to update game oracle: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function updateOwnerWallet() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const newWallet = document.getElementById("newOwnerWallet").value;
+        const key = document.getElementById("ownerWalletKey").value;
+        if (!ethers.utils.isAddress(newWallet)) return alert("Enter a valid address!");
+        if (!key) return alert("Enter the secret key!");
+        try {
+            showLoading(true);
+            const tx = await contract.updateOwnerWallet(newWallet, key, { gasLimit: 200000 });
+            await tx.wait();
+            alert(`Owner wallet updated to ${newWallet}!`);
+        } catch (error) {
+            console.error("Error updating owner wallet:", error);
+            alert("Failed to update owner wallet: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function updateSecretKey() {
+        if (!contract || !account) return alert("Connect wallet first!");
+        const newKey = document.getElementById("newSecretKey").value;
+        const currentKey = document.getElementById("currentSecretKey").value;
+        if (!newKey || !currentKey) return alert("Enter both keys!");
+        try {
+            showLoading(true);
+            const tx = await contract.updateSecretKey(newKey, currentKey, { gasLimit: 200000 });
+            await tx.wait();
+            alert("Secret key updated successfully!");
+        } catch (error) {
+            console.error("Error updating secret key:", error);
+            alert("Failed to update secret key: " + (error.message || "Unknown error"));
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // Event Listeners
+    document.getElementById("connectWallet").addEventListener("click", connectWallet);
+    document.getElementById("disconnectWallet").addEventListener("click", disconnectWallet);
+    document.getElementById("playGame").addEventListener("click", resetGame);
+    document.getElementById("enterFullscreen").addEventListener("click", enterFullscreen);
+    document.getElementById("claimWelcomeBonus").addEventListener("click", claimWelcomeBonus);
+    document.getElementById("claimDailyLoginReward").addEventListener("click", claimDailyLoginReward);
+    document.getElementById("claimSocialMediaShareReward").addEventListener("click", claimSocialMediaShareReward);
+    document.getElementById("convertPointsToTokens").addEventListener("click", convertPointsToTokens);
+    document.getElementById("stakeTokens").addEventListener("click", stakeTokens);
+    document.getElementById("unstakeTokens").addEventListener("click", unstakeTokens);
+    document.getElementById("mintTokens").addEventListener("click", mintTokens);
+    document.getElementById("burnTokens").addEventListener("click", burnTokens);
+    document.getElementById("updateWelcomeBonus").addEventListener("click", updateWelcomeBonus);
+    document.getElementById("updateReferralCommissionRate").addEventListener("click", updateReferralCommissionRate);
+    document.getElementById("updateWithdrawalFee").addEventListener("click", updateWithdrawalFee);
+    document.getElementById("updateMaxConversionLimit").addEventListener("click", updateMaxConversionLimit);
+    document.getElementById("updateConversionRatio").addEventListener("click", updateConversionRatio);
+    document.getElementById("updateLockReward").addEventListener("click", updateLockReward);
+    document.getElementById("updateGameOracle").addEventListener("click", updateGameOracle);
+    document.getElementById("updateOwnerWallet").addEventListener("click", updateOwnerWallet);
+    document.getElementById("updateSecretKey").addEventListener("click", updateSecretKey);
+
+    // Keyboard Controls
+    document.addEventListener("keydown", (e) => {
+        if (!isGameRunning) return;
+        switch (e.key) {
+            case "ArrowUp":
+                if (direction !== "down") direction = "up";
+                break;
+            case "ArrowDown":
+                if (direction !== "up") direction = "down";
+                break;
+            case "ArrowLeft":
+                if (direction !== "right") direction = "left";
+                break;
+            case "ArrowRight":
+                if (direction !== "left") direction = "right";
+                break;
+        }
+    });
+
+    // Initial Setup
+    updateCanvasSize();
+    generateBoxes();
+    draw();
+    updatePlayerHistoryUI();
+});
