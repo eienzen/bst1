@@ -2,167 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://raw.githubusercontent.com; connect-src 'self' https://data-seed-prebsc-1-s1.bnbchain.org:8545/ wss://data-seed-prebsc-1-s1.bnbchain.org:8545/ https://data-seed-prebsc-2-s1.bnbchain.org:8545/ wss://data-seed-prebsc-2-s1.bnbchain.org:8545/ https://*.bnbchain.org wss://*.bnbchain.org; media-src 'self'; object-src 'none';">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>BlockSnakes Game</title>
-    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/eienzen/blocksnakes/main/favicon.ico">
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
-    <script src="game.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Snakes Game</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #0a0a23, #1a1a3d);
-            color: #fff;
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
-        #header {
-            width: 100%;
-            background: linear-gradient(90deg, #2a2a5d, #00ffcc);
-            padding: 15px;
+            background-color: #f0f0f0;
             text-align: center;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            position: sticky;
-            top: 0;
+            margin: 0;
+            padding: 20px;
+            color: #333;
         }
-        #header h1 {
-            margin: 0 10px;
-            font-size: clamp(24px, 5vw, 36px);
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        #header p {
-            margin: 5px 10px;
-            font-size: clamp(14px, 3vw, 18px);
-        }
-        #content {
-            margin-top: 20px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-bottom: 20px;
+        h1 {
+            color: #800080;
         }
         canvas {
-            border: 2px solid #00ffcc;
-            background: linear-gradient(45deg, #0a0a23, #1a1a3d);
-            border-radius: 5px;
-            margin: 15px 0;
-            max-width: 90vw;
-            max-height: 65vh;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
-        }
-        #gameInfo, #playerHistory, #stakingSection, #taskSection {
-            margin: 15px 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #2a2a5d, #3a3a7d);
-            border-radius: 10px;
-            width: 85%;
-            max-width: 650px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease;
-        }
-        #gameInfo:hover, #playerHistory:hover, #stakingSection:hover, #taskSection:hover {
-            transform: translateY(-2px);
-        }
-        #loadingIndicator {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #00ffcc;
-            padding: 25px;
-            border-radius: 10px;
-            display: none;
-            z-index: 2000;
-            font-size: 18px;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            border: 2px solid #800080;
+            background-color: #0a0a23;
+            margin: 10px auto;
+            display: block;
         }
         button {
             padding: 10px 20px;
             margin: 5px;
-            background-color: #00ffcc;
-            color: #000;
+            background-color: #800080;
+            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
-            position: relative;
-            box-shadow: 0 0 5px rgba(0, 255, 204, 0.3);
         }
         button:hover {
-            background-color: #00ccaa;
-            transform: scale(1.05);
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.6);
-        }
-        button:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        button::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        button:hover::after {
-            opacity: 1;
+            background-color: #a100a1;
         }
         input, select {
             padding: 8px;
             margin: 5px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            border: 1px solid #00ffcc;
-            background-color: #1a1a3d;
-            color: #fff;
-            font-size: 16px;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        li {
-            margin: 5px 0;
-            background-color: #3a3a7d;
-            padding: 8px;
-            border-radius: 3px;
-            font-size: 14px;
-        }
-        h2, h3 {
-            color: #00ffcc;
-            margin: 10px 0;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        #loadingIndicator {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
         }
         #gameOverPopup {
             display: none;
@@ -170,102 +57,194 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #2a2a5d, #3a3a7d);
-            padding: 25px;
-            border: 2px solid #00ffcc;
+            background-color: #fff;
+            padding: 20px;
+            border: 2px solid #800080;
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
             z-index: 1000;
-            color: #fff;
-            text-align: center;
-            max-width: 90%;
         }
-        @media (max-width: 600px) {
-            #header {
-                padding: 10px;
-            }
-            #gameInfo, #playerHistory, #stakingSection, #taskSection {
-                width: 90%;
-                padding: 15px;
-            }
-            button, input, select {
-                width: 100%;
-                box-sizing: border-box;
-            }
+        .history-section {
+            margin-top: 20px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .history-section h3 {
+            color: #800080;
+        }
+        .history-section ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .history-section li {
+            background-color: #fff;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
-    <div id="header">
-        <h1>BlockSnakes Game</h1>
-        <p id="walletAddress"></p>
+    <h1>Block Snakes Game</h1>
+
+    <!-- Wallet Connection -->
+    <div>
+        <button id="connectWallet">Connect Wallet</button>
+        <button id="disconnectWallet" style="display: none;">Disconnect Wallet</button>
+        <p id="walletAddress">Wallet: Not Connected</p>
     </div>
-    <div id="content">
-        <button id="connectWallet" data-tooltip="Connect your wallet to start playing">Connect Wallet</button>
-        <button id="disconnectWallet" style="display: none;" data-tooltip="Disconnect your wallet">Disconnect Wallet</button>
-        <button id="playGame" data-tooltip="Start a new game session">Play Game</button>
-        <canvas id="gameCanvas"></canvas>
-        <div id="gameInfo">
-            Inclusde<h2>Game Info</h2>
-            <p id="boxesEaten">Boxes Eaten: 0</p>
-            <p id="pendingPoints">Pending Points: 0 BST Points</p>
-        </div>
-        <div id="taskSection">
-            <h2>Tasks</h2>
-            <button id="claimWelcomeBonus" data-tooltip="Claim your one-time welcome bonus">Claim Welcome Bonus</button>
-            <button id="claimDailyLoginReward" data-tooltip="Claim your daily login reward">Claim Daily Login Reward</button>
-            <button id="claimSocialMediaShareReward" data-tooltip="Claim reward for sharing on social media">Claim Social Media Share Reward</button>
-            <button id="getReferralLink" data-tooltip="Get your unique referral link">Get Referral Link</button>
-            <h3>Convert Points to Tokens</h3>
-            <input type="number" id="convertPointsAmount" placeholder="Points to Convert" min="0" step="0.01">
-            <button id="convertPoints" data-tooltip="Convert your points to BST tokens">Convert Points</button>
-        </div>
-        <div id="stakingSection">
-            <h2>Staking</h2>
-            <input type="number" id="stakeAmount" placeholder="Amount to Stake" min="0" step="0.01">
-            <select id="lockPeriod">
-                <option value="0">Flexible (2% APR)</option>
-                <option value="1">60 Days (4% APR)</option>
-                <option value="2">180 Days (6% APR)</option>
-                <option value="3">365 Days (10% APR)</option>
-            </select>
-            <button id="stakeTokens" data-tooltip="Stake your BST tokens to earn rewards">Stake Tokens</button>
-            <input type="number" id="unstakeAmount" placeholder="Amount to Unstake" min="0" step="0.01">
-            <select id="unlockPeriod">
-                <option value="0">Flexible</option>
-                <option value="1">60 Days</option>
-                <option value="2">180 Days</option>
-                <option value="3">365 Days</option>
-            </select>
-            <button id="unstakeTokens" data-tooltip="Unstake your BST tokens">Unstake Tokens</button>
-        </div>
-        <div id="playerHistory">
-            <h2>Player History</h2>
-            <p id="gamesPlayed">Games Played: 0</p>
-            <p id="totalPoints">Total Points: 0 BST Points</p>
-            <p id="totalGameRewards">Total Token Rewards: 0 BST Tokens</p>
-            <p id="totalReferrals">Total Referrals: 0</p>
-            <p id="referralPoints">Referral Points: 0 BST Points</p>
-            <p id="pendingPointsText">Pending Points: 0 BST Points</p>
-            <p id="flexibleStakeBalance">Flexible Stake Balance: 0 BST Tokens</p>
-            <p id="lockedStakeBalance60D">Locked Stake Balance (60D): 0 BST Tokens</p>
-            <p id="lockedStakeBalance180D">Locked Stake Balance (180D): 0 BST Tokens</p>
-            <p id="lockedStakeBalance365D">Locked Stake Balance (365D): 0 BST Tokens</p>
-            <p id="walletBalance">Wallet Balance: 0 BST Tokens</p>
-            <h3>Reward History</h3>
-            <ul id="rewardHistoryList"></ul>
-            <h3>Task History</h3>
-            <ul id="taskHistoryList"></ul>
-            <h3>Staking History</h3>
-            <ul id="stakingHistoryList"></ul>
-        </div>
+
+    <!-- Game Controls -->
+    <div>
+        <button id="playGame">Play Game</button>
+        <button id="enterFullscreen">Enter Fullscreen</button>
     </div>
-    <div id="loadingIndicator">Loading...</div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+    <p id="boxesEaten">Boxes Eaten: 0</p>
+    <p id="pendingPoints">Pending Points: 0 BST Points</p>
+
+    <!-- Game Over Popup -->
     <div id="gameOverPopup">
         <h2>Game Over!</h2>
-        <p id="finalBoxesEaten"></p>
-        <p id="finalPoints"></p>
-        <button id="closePopup" data-tooltip="Close and reset the game">Close</button>
+        <p id="finalBoxesEaten">Boxes Eaten: 0</p>
+        <p id="finalPoints">Earned Points: 0 BST Points</p>
+        <button id="closePopup">Close</button>
     </div>
+
+    <!-- Rewards -->
+    <div>
+        <button id="claimWelcomeBonus">Claim Welcome Bonus</button>
+        <button id="claimDailyLoginReward">Claim Daily Login Reward</button>
+        <button id="claimSocialMediaShareReward">Claim Social Media Share Reward</button>
+    </div>
+
+    <!-- Points Conversion -->
+    <div>
+        <input type="number" id="convertPointsAmount" placeholder="Points to Convert">
+        <button id="convertPointsToTokens">Convert Points to Tokens</button>
+    </div>
+
+    <!-- Staking -->
+    <div>
+        <input type="number" id="stakeAmount" placeholder="Amount to Stake">
+        <select id="lockPeriod">
+            <option value="0">Flexible</option>
+            <option value="1">60 Days</option>
+            <option value="2">180 Days</option>
+            <option value="3">365 Days</option>
+        </select>
+        <button id="stakeTokens">Stake Tokens</button>
+    </div>
+
+    <!-- Unstaking -->
+    <div>
+        <input type="number" id="unstakeAmount" placeholder="Amount to Unstake">
+        <select id="unlockPeriod">
+            <option value="0">Flexible</option>
+            <option value="1">60 Days</option>
+            <option value="2">180 Days</option>
+            <option value="3">365 Days</option>
+        </select>
+        <button id="unstakeTokens">Unstake Tokens</button>
+    </div>
+
+    <!-- Owner Functions -->
+    <div>
+        <h2>Owner Functions</h2>
+        <input type="number" id="mintAmount" placeholder="Amount to Mint">
+        <input type="text" id="mintKey" placeholder="Secret Key">
+        <button id="mintTokens">Mint Tokens</button>
+
+        <input type="number" id="burnAmount" placeholder="Amount to Burn">
+        <input type="text" id="burnKey" placeholder="Secret Key">
+        <button id="burnTokens">Burn Tokens</button>
+
+        <input type="number" id="newWelcomeBonus" placeholder="New Welcome Bonus">
+        <input type="text" id="welcomeBonusKey" placeholder="Secret Key">
+        <button id="updateWelcomeBonus">Update Welcome Bonus</button>
+
+        <input type="number" id="newReferralRate" placeholder="New Referral Rate (in wei)">
+        <input type="text" id="referralRateKey" placeholder="Secret Key">
+        <button id="updateReferralCommissionRate">Update Referral Rate</button>
+
+        <input type="number" id="newWithdrawalFee" placeholder="New Withdrawal Fee (in wei)">
+        <input type="text" id="withdrawalFeeKey" placeholder="Secret Key">
+        <button id="updateWithdrawalFee">Update Withdrawal Fee</button>
+
+        <input type="number" id="newMaxConversionLimit" placeholder="New Max Conversion Limit">
+        <input type="text" id="maxConversionLimitKey" placeholder="Secret Key">
+        <button id="updateMaxConversionLimit">Update Max Conversion Limit</button>
+
+        <input type="number" id="newConversionRatio" placeholder="New Conversion Ratio (in wei)">
+        <input type="text" id="conversionRatioKey" placeholder="Secret Key">
+        <button id="updateConversionRatio">Update Conversion Ratio</button>
+
+        <select id="lockRewardPeriod">
+            <option value="0">Flexible</option>
+            <option value="1">60 Days</option>
+            <option value="2">180 Days</option>
+            <option value="3">365 Days</option>
+        </select>
+        <input type="number" id="newLockRewardRate" placeholder="New Lock Reward Rate (in wei)">
+        <input type="text" id="lockRewardKey" placeholder="Secret Key">
+        <button id="updateLockReward">Update Lock Reward</button>
+
+        <input type="text" id="newGameOracle" placeholder="New Game Oracle Address">
+        <input type="text" id="gameOracleKey" placeholder="Secret Key">
+        <button id="updateGameOracle">Update Game Oracle</button>
+
+        <input type="text" id="newOwnerWallet" placeholder="New Owner Wallet Address">
+        <input type="text" id="ownerWalletKey" placeholder="Secret Key">
+        <button id="updateOwnerWallet">Update Owner Wallet</button>
+
+        <input type="text" id="newSecretKey" placeholder="New Secret Key">
+        <input type="text" id="currentSecretKey" placeholder="Current Secret Key">
+        <button id="updateSecretKey">Update Secret Key</button>
+    </div>
+
+    <!-- Player History -->
+    <div class="history-section">
+        <h3>Player Stats</h3>
+        <p id="gamesPlayed">Games Played: 0</p>
+        <p id="totalPoints">Total Points: 0 BST Points</p>
+        <p id="totalRewards">Total Rewards: 0 BST Tokens</p>
+        <p id="totalReferrals">Total Referrals: 0</p>
+        <p id="referralPoints">Referral Points: 0 BST Points</p>
+        <p id="walletBalance">Wallet Balance: 0 BST Tokens</p>
+        <p id="flexibleStakeBalance">Flexible Stake Balance: 0 BST Tokens</p>
+        <p id="lockedStakeBalance">Locked Stake Balances: 60 Days: 0, 180 Days: 0, 365 Days: 0</p>
+    </div>
+
+    <div class="history-section">
+        <h3>Reward History</h3>
+        <ul id="rewardHistory"></ul>
+    </div>
+
+    <div class="history-section">
+        <h3>Task History</h3>
+        <ul id="taskHistory"></ul>
+    </div>
+
+    <div class="history-section">
+        <h3>Staking History</h3>
+        <ul id="stakingHistory"></ul>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="eatingSound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
+    <audio id="gameOverSound" src="https://www.soundjay.com/buttons/beep-02.mp3"></audio>
+    <audio id="victorySound" src="https://www.soundjay.com/buttons/beep-03.mp3"></audio>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator">Loading...</div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
