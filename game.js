@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM fully loaded, initializing game...");
 
-    // Game state variables
     let account = null;
     let contract = null;
     let animationFrameId = null;
@@ -10,9 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let MAX_CONVERSION_LIMIT = 1000;
     let CONVERSION_RATIO = 1;
     let isGameRunning = false;
-    let isResetting = false; // For debouncing game reset
 
-    // Player data stored in localStorage
     let playerData = JSON.parse(localStorage.getItem("playerData")) || {
         gamesPlayed: 0,
         totalPoints: 0,
@@ -35,16 +32,13 @@ document.addEventListener("DOMContentLoaded", () => {
         lastLogin: 0
     };
 
-    // Handle referral link from URL
     const urlParams = new URLSearchParams(window.location.search);
     const referrerAddress = urlParams.get("ref");
     if (referrerAddress && !playerData.pendingReferral && ethers.utils.isAddress(referrerAddress)) {
         playerData.pendingReferral = referrerAddress;
     }
 
-    // Contract configuration
-    const CONTRACT_ADDRESS = "0xb9384B2A1E6b6C989B04Be35000F29031975c727";
-    const GAME_ORACLE_ADDRESS = "0x6C12d2802cCF7072e9ED33b3bdBB0ce4230d5032";
+    const CONTRACT_ADDRESS = "0xc05697BA9841Bd09f5F41BaDD121d3c29B20642A"; // Update after deployment
     const CONTRACT_ABI = [
 	{
 		"inputs": [
@@ -196,6 +190,25 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		],
 		"name": "GameOracleUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "enum BlockSnakesGame.LockPeriod",
+				"name": "period",
+				"type": "uint8"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newRate",
+				"type": "uint256"
+			}
+		],
+		"name": "LockRewardUpdated",
 		"type": "event"
 	},
 	{
@@ -607,19 +620,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "_currentKey",
-				"type": "string"
-			}
-		],
-		"name": "resetSecretKey",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
@@ -704,17 +704,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "_gameOracle",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
@@ -762,6 +751,29 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		],
 		"name": "updateGameOracle",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "enum BlockSnakesGame.LockPeriod",
+				"name": "period",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_newRate",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_key",
+				"type": "string"
+			}
+		],
+		"name": "updateLockReward",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -873,6 +885,17 @@ document.addEventListener("DOMContentLoaded", () => {
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_gameOracle",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
 	},
 	{
 		"inputs": [
@@ -1387,28 +1410,27 @@ document.addEventListener("DOMContentLoaded", () => {
 		"stateMutability": "view",
 		"type": "function"
 	}
-];
+],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ];
 
-    // Initialize provider for game oracle with increased polling interval
     let gameOracleProvider;
     try {
         gameOracleProvider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.bnbchain.org:8545");
-        gameOracleProvider.pollingInterval = 15000;
         console.log("Connected to primary JSON-RPC provider.");
     } catch (error) {
         console.error("Failed to connect to primary provider:", error);
         try {
             gameOracleProvider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-2-s1.bnbchain.org:8545");
-            gameOracleProvider.pollingInterval = 15000;
             console.log("Connected to backup JSON-RPC provider.");
         } catch (backupError) {
             console.error("Failed to connect to backup provider:", backupError);
             alert("Cannot connect to BNB Testnet. Please check your network.");
-            return;
         }
     }
 
-    // Game setup
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas ? canvas.getContext("2d") : null;
     const gridWidth = 30;
@@ -1422,7 +1444,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const baseSnakeSpeed = 150;
     let lastMoveTime = 0;
 
-    // Utility Functions
+    const eatingSound = document.getElementById("eatingSound");
+    const gameOverSound = document.getElementById("gameOverSound");
+    const victorySound = document.getElementById("victorySound");
+
     function showLoading(show) {
         const loadingIndicator = document.getElementById("loadingIndicator");
         if (loadingIndicator) {
@@ -1431,10 +1456,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateCanvasSize() {
-        if (!canvas || !ctx) {
-            console.error("Canvas not available!");
-            return;
-        }
+        if (!canvas) return console.error("Canvas not available!");
         const screenWidth = window.innerWidth * 0.9;
         const screenHeight = window.innerHeight * 0.7;
         gridSize = Math.min(screenWidth / gridWidth, screenHeight / gridHeight);
@@ -1446,8 +1468,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function enterFullscreen() {
-        if (!canvas) return;
-        if (document.fullscreenEnabled) {
+        if (document.fullscreenEnabled && canvas) {
             canvas.requestFullscreen().catch(err => console.warn("Fullscreen failed:", err));
         }
         updateCanvasSize();
@@ -1466,10 +1487,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function draw() {
-        if (!ctx) {
-            console.error("Canvas context not available!");
-            return;
-        }
+        if (!ctx) return console.error("Canvas context not available!");
         ctx.fillStyle = "#0a0a23";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1504,18 +1522,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const boxesEatenElement = document.getElementById("boxesEaten");
+        if (boxesEatenElement) {
+            boxesEatenElement.textContent = `Boxes Eaten: ${boxesEaten}`;
+        }
         const pendingPointsElement = document.getElementById("pendingPoints");
-        if (boxesEatenElement) boxesEatenElement.textContent = `Boxes Eaten: ${boxesEaten}`;
-        if (pendingPointsElement) pendingPointsElement.textContent = `Pending Points: ${(playerData.pendingPoints || 0).toFixed(2)} BST Points`;
+        if (pendingPointsElement) {
+            pendingPointsElement.textContent = `Pending Points: ${(playerData.pendingPoints || 0).toFixed(2)} BST Points`;
+        }
     }
 
     function gameLoop(currentTime) {
-        if (!isGameRunning) return;
-        if (currentTime - lastMoveTime >= baseSnakeSpeed) {
-            move();
-            lastMoveTime = currentTime;
+        if (isGameRunning && ctx) {
+            if (currentTime - lastMoveTime >= baseSnakeSpeed) {
+                move();
+                lastMoveTime = currentTime;
+            }
+            animationFrameId = requestAnimationFrame(gameLoop);
         }
-        animationFrameId = requestAnimationFrame(gameLoop);
     }
 
     function move() {
@@ -1528,6 +1551,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (direction === "down") head.y++;
 
         if (head.x < 0 || head.x >= gridWidth || head.y < 0 || head.y >= gridHeight || snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+            if (gameOverSound) gameOverSound.play();
             showGameOverPopup();
             return;
         }
@@ -1535,27 +1559,28 @@ document.addEventListener("DOMContentLoaded", () => {
         snake.unshift(head);
         const eatenBoxIndex = boxes.findIndex(box => box.x === head.x && box.y === head.y);
         if (eatenBoxIndex !== -1) {
+            if (eatingSound) eatingSound.play();
             boxesEaten++;
             const point = 0.5;
             playerData.pendingPoints = (playerData.pendingPoints || 0) + point;
             gamePoints += point;
             playerData.totalPoints = (playerData.totalPoints || 0) + point;
             playerData.rewardHistory.push({ amount: point, timestamp: Date.now(), rewardType: "Game", referee: "N/A" });
-
-            if (playerData.pendingReferral && ethers.utils.isAddress(playerData.pendingReferral)) {
+            if (playerData.pendingReferral) {
                 const referrerPoint = point * 0.01;
                 playerData.pendingReferrerPoints = (playerData.pendingReferrerPoints || 0) + referrerPoint;
                 playerData.referralPoints = (playerData.referralPoints || 0) + referrerPoint;
                 playerData.totalReferrals = (playerData.totalReferrals || 0) + 1;
                 playerData.rewardHistory.push({ amount: referrerPoint, timestamp: Date.now(), rewardType: "Referral", referee: playerData.pendingReferral });
             }
-
             boxes.splice(eatenBoxIndex, 1);
             if (boxes.length < 5) generateBoxes();
+            if (boxesEaten % 10 === 0 || boxesEaten % 20 === 0 || boxesEaten % 30 === 0) {
+                if (victorySound) victorySound.play();
+            }
         } else {
             snake.pop();
         }
-
         draw();
         updatePlayerHistoryUI();
         localStorage.setItem("playerData", JSON.stringify(playerData));
@@ -1580,8 +1605,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function resetGame() {
-        if (isResetting) return;
-        isResetting = true;
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
         isGameRunning = false;
         console.log("Resetting game...");
@@ -1600,16 +1623,13 @@ document.addEventListener("DOMContentLoaded", () => {
         lastMoveTime = 0;
         animationFrameId = requestAnimationFrame(gameLoop);
         showLoading(false);
-        isResetting = false;
         updatePlayerHistoryUI();
         localStorage.setItem("playerData", JSON.stringify(playerData));
     }
 
-    // Blockchain Interaction Functions
     async function claimWelcomeBonus() {
         if (!account) return alert("Connect wallet first!");
         if (playerData.hasClaimedWelcomeBonus) return alert("Bonus already claimed!");
-        if (!contract) return alert("Contract not initialized!");
         try {
             showLoading(true);
             const tx = await contract.claimWelcomeBonus({ gasLimit: 200000 });
@@ -1619,13 +1639,12 @@ document.addEventListener("DOMContentLoaded", () => {
             playerData.pendingPoints = (playerData.pendingPoints || 0) + welcomeBonus;
             playerData.totalPoints = (playerData.totalPoints || 0) + welcomeBonus;
             playerData.rewardHistory.push({ amount: welcomeBonus, timestamp: Date.now(), rewardType: "Welcome Bonus", referee: "N/A" });
-            await loadPlayerHistory();
             updatePlayerHistoryUI();
             localStorage.setItem("playerData", JSON.stringify(playerData));
             alert(`Welcome bonus of ${welcomeBonus} BST Points claimed!`);
         } catch (error) {
             console.error("Error claiming welcome bonus:", error);
-            alert("Failed to claim bonus: " + (error.reason || error.message || "Unknown error"));
+            alert("Failed to claim bonus: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
@@ -1678,37 +1697,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const pointsToConvert = parseFloat(document.getElementById("convertPointsAmount").value) || 0;
         if (pointsToConvert <= 0) return alert("Enter a valid amount!");
         if (pointsToConvert > MAX_CONVERSION_LIMIT) return alert(`Cannot convert more than ${MAX_CONVERSION_LIMIT} BST Points at once!`);
-
+        if (pointsToConvert > playerData.pendingPoints) return alert("Insufficient BST Points!");
         try {
             showLoading(true);
-            const onChainPoints = Number(ethers.utils.formatUnits(await contract.getInternalBalance(account), 18));
-            playerData.pendingPoints = onChainPoints;
-            updatePlayerHistoryUI();
-
-            if (pointsToConvert > onChainPoints) {
-                throw new Error("Insufficient BST Points on-chain!");
-            }
-
             const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const network = await provider.getNetwork();
-            if (network.chainId.toString() !== TARGET_NETWORK_ID) {
-                throw new Error("Please switch to BNB Smart Chain Testnet in your wallet!");
-            }
-
             const balance = await provider.getBalance(account);
             const feeInWei = ethers.utils.parseUnits(WITHDRAWAL_FEE_BNB, "ether");
             if (balance.lt(feeInWei)) {
-                throw new Error(`Need ${WITHDRAWAL_FEE_BNB} BNB for conversion fee.`);
+                alert(`Need ${WITHDRAWAL_FEE_BNB} BNB for conversion fee.`);
+                return;
             }
-
             const pointsInWei = ethers.utils.parseUnits(pointsToConvert.toString(), 18);
             const tokensToReceive = pointsToConvert / CONVERSION_RATIO;
             const tokensInWei = ethers.utils.parseUnits(tokensToReceive.toString(), 18);
             const contractBal = await contract.contractBalance();
             if (ethers.BigNumber.from(contractBal).lt(tokensInWei)) {
-                throw new Error("Contract does not have enough BST tokens!");
+                alert("Contract does not have enough BST tokens!");
+                return;
             }
-
             const tx = await contract.convertPointsToTokens(
                 pointsInWei,
                 account,
@@ -1716,9 +1722,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 { value: feeInWei, gasLimit: 500000 }
             );
             await tx.wait();
-
             playerData.pendingPoints -= pointsToConvert;
             playerData.totalRewards += tokensToReceive;
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
             playerData.rewardHistory.push({ amount: tokensToReceive, timestamp: Date.now(), rewardType: "Points Conversion", referee: "N/A" });
             if (playerData.pendingReferral) {
                 const referrerPoints = pointsToConvert * 0.01;
@@ -1727,14 +1733,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 playerData.rewardHistory.push({ amount: referrerPoints, timestamp: Date.now(), rewardType: "Referral", referee: playerData.pendingReferral });
             }
             playerData.pendingReferral = null;
-
-            await loadPlayerHistory();
             updatePlayerHistoryUI();
             localStorage.setItem("playerData", JSON.stringify(playerData));
             alert(`${pointsToConvert} BST Points converted to ${tokensToReceive} BST Tokens!`);
         } catch (error) {
             console.error("Error converting points to tokens:", error);
-            alert("Failed to convert points: " + (error.reason || error.message || "Unknown error"));
+            alert("Failed to convert points: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
@@ -1750,25 +1754,26 @@ document.addEventListener("DOMContentLoaded", () => {
             const amountInWei = ethers.utils.parseUnits(amount.toString(), 18);
             const walletBalance = await contract.balanceOf(account);
             if (ethers.BigNumber.from(walletBalance).lt(amountInWei)) {
-                throw new Error("Insufficient BST Tokens in wallet!");
+                alert("Insufficient BST Tokens in wallet!");
+                return;
             }
-            const tx = await contract.stakeTokens(amountInWei, lockPeriod, { gasLimit: 300000 });
+            const tx = await contract.stakeTokens(amountInWei, lockPeriod, { gasLimit: 500000 });
             await tx.wait();
-
             if (lockPeriod === 0) {
-                playerData.flexibleStakeBalance += amount;
+                playerData.flexibleStakeBalance = (playerData.flexibleStakeBalance || 0) + amount;
             } else {
-                playerData.lockedStakeBalances[lockPeriod] += amount;
-                playerData.lockedStakeStartTimes[lockPeriod] = Date.now();
+                playerData.lockedStakeBalances[lockPeriod] = (playerData.lockedStakeBalances[lockPeriod] || 0) + amount;
+                playerData.lockedStakeStartTimes[lockPeriod] = Math.floor(Date.now() / 1000);
             }
-            playerData.stakingHistory.push({ amount, lockPeriod, timestamp: Date.now(), action: "Stake" });
+            playerData.stakingHistory.push({ amount, timestamp: Date.now(), lockPeriod, action: "Stake" });
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
             await loadPlayerHistory();
             updatePlayerHistoryUI();
-            localStorage.setItem("playerData", JSON.stringify(playerData));
-            alert(`${amount} BST Tokens staked for ${lockPeriod === 0 ? "Flexible" : lockPeriod === 1 ? "60 Days" : lockPeriod === 2 ? "180 Days" : "365 Days"}!`);
+            alert(`${amount} BST Tokens staked successfully!`);
+            document.getElementById("stakeAmount").value = "";
         } catch (error) {
             console.error("Error staking tokens:", error);
-            alert("Failed to stake tokens: " + (error.reason || error.message || "Unknown error"));
+            alert("Failed to stake: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
@@ -1782,51 +1787,25 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             showLoading(true);
             const amountInWei = ethers.utils.parseUnits(amount.toString(), 18);
-            const balanceKey = lockPeriod === 0 ? "flexibleStakeBalance" : `lockedStakeBalances[${lockPeriod}]`;
-            const currentBalance = lockPeriod === 0 ? playerData.flexibleStakeBalance : playerData.lockedStakeBalances[lockPeriod];
-            if (currentBalance < amount) {
-                throw new Error("Insufficient staked balance!");
-            }
-
-            if (lockPeriod !== 0) {
-                const startTime = playerData.lockedStakeStartTimes[lockPeriod];
-                const lockDuration = lockPeriod === 1 ? 60 * 24 * 60 * 60 * 1000 : lockPeriod === 2 ? 180 * 24 * 60 * 60 * 1000 : 365 * 24 * 60 * 60 * 1000;
-                if (Date.now() - startTime < lockDuration) {
-                    throw new Error("Lock period not yet completed!");
-                }
-            }
-
-            const tx = await contract.unstakeTokens(amountInWei, lockPeriod, { gasLimit: 300000 });
+            const tx = await contract.unstakeTokens(amountInWei, lockPeriod, { gasLimit: 500000 });
             await tx.wait();
-
             if (lockPeriod === 0) {
-                playerData.flexibleStakeBalance -= amount;
+                playerData.flexibleStakeBalance = (playerData.flexibleStakeBalance || 0) - amount;
             } else {
-                playerData.lockedStakeBalances[lockPeriod] -= amount;
+                playerData.lockedStakeBalances[lockPeriod] = (playerData.lockedStakeBalances[lockPeriod] || 0) - amount;
             }
-            playerData.stakingHistory.push({ amount, lockPeriod, timestamp: Date.now(), action: "Unstake" });
+            playerData.stakingHistory.push({ amount, timestamp: Date.now(), lockPeriod, action: "Unstake" });
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
             await loadPlayerHistory();
             updatePlayerHistoryUI();
-            localStorage.setItem("playerData", JSON.stringify(playerData));
-            alert(`${amount} BST Tokens unstaked!`);
+            alert(`${amount} BST Tokens unstaked successfully!`);
+            document.getElementById("unstakeAmount").value = "";
         } catch (error) {
             console.error("Error unstaking tokens:", error);
-            alert("Failed to unstake tokens: " + (error.reason || error.message || "Unknown error"));
+            alert("Failed to unstake: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
-    }
-
-    function getReferralLink() {
-        if (!account) return alert("Connect wallet first!");
-        const baseUrl = window.location.origin + window.location.pathname;
-        const referralLink = `${baseUrl}?ref=${account}`;
-        navigator.clipboard.writeText(referralLink).then(() => {
-            alert(`Referral link copied to clipboard: ${referralLink}`);
-        }).catch(err => {
-            console.error("Failed to copy referral link:", err);
-            alert(`Referral link: ${referralLink} (Please copy manually)`);
-        });
     }
 
     async function connectWallet() {
@@ -1834,51 +1813,48 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             showLoading(true);
             const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
             const network = await provider.getNetwork();
-            if (network.chainId.toString() !== TARGET_NETWORK_ID) {
+            const chainId = network.chainId.toString();
+            if (chainId !== TARGET_NETWORK_ID) {
                 try {
                     await window.ethereum.request({
                         method: "wallet_switchEthereumChain",
-                        params: [{ chainId: `0x${parseInt(TARGET_NETWORK_ID).toString(16)}` }],
+                        params: [{ chainId: "0x61" }]
                     });
                 } catch (switchError) {
                     if (switchError.code === 4902) {
                         await window.ethereum.request({
                             method: "wallet_addEthereumChain",
                             params: [{
-                                chainId: `0x${parseInt(TARGET_NETWORK_ID).toString(16)}`,
+                                chainId: "0x61",
                                 chainName: "BNB Smart Chain Testnet",
-                                rpcUrls: ["https://data-seed-prebsc-1-s1.bnbchain.org:8545"],
+                                rpcUrls: ["https://data-seed-prebsc-1-s1.bnbchain.org:8545/"],
                                 nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
                                 blockExplorerUrls: ["https://testnet.bscscan.com"]
-                            }],
+                            }]
                         });
                     } else {
                         throw switchError;
                     }
                 }
             }
-
             const accounts = await provider.send("eth_requestAccounts", []);
-            if (!accounts || accounts.length === 0) {
-                throw new Error("No active wallet found");
-            }
-
             account = accounts[0];
-            const signer = provider.getSigner();
-            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
             playerData.walletAddress = account;
-            const walletAddressElement = document.getElementById("walletAddress");
-            if (walletAddressElement) {
-                walletAddressElement.textContent = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
-            }
-            document.getElementById("connectWallet").style.display = "none";
-            document.getElementById("disconnectWallet").style.display = "inline-block";
-
+            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider.getSigner());
+            WITHDRAWAL_FEE_BNB = ethers.utils.formatUnits(await contract.withdrawalFeeInBnb(), "ether");
+            MAX_CONVERSION_LIMIT = Number(ethers.utils.formatUnits(await contract.maxConversionLimit(), 18));
+            CONVERSION_RATIO = Number(ethers.utils.formatUnits(await contract.conversionRatio(), 18));
             await loadPlayerHistory();
             updatePlayerHistoryUI();
-            localStorage.setItem("playerData", JSON.stringify(playerData));
+            const connectWalletBtn = document.getElementById("connectWallet");
+            const disconnectWalletBtn = document.getElementById("disconnectWallet");
+            if (connectWalletBtn) connectWalletBtn.style.display = "none";
+            if (disconnectWalletBtn) disconnectWalletBtn.style.display = "block";
+            const walletAddressElement = document.getElementById("walletAddress");
+            if (walletAddressElement) walletAddressElement.textContent = `Connected: ${account.slice(0, 6)}...`;
+            alert("Wallet connected successfully!");
         } catch (error) {
             console.error("Wallet connection error:", error);
             alert("Failed to connect wallet: " + (error.message || "Unknown error"));
@@ -1890,35 +1866,4 @@ document.addEventListener("DOMContentLoaded", () => {
     function disconnectWallet() {
         account = null;
         contract = null;
-        playerData.walletAddress = null;
-        document.getElementById("walletAddress").textContent = "";
-        document.getElementById("connectWallet").style.display = "inline-block";
-        document.getElementById("disconnectWallet").style.display = "none";
-        updatePlayerHistoryUI();
-        localStorage.setItem("playerData", JSON.stringify(playerData));
-    }
-
-    async function loadPlayerHistory() {
-        if (!contract || !account) return;
-        try {
-            const playerHistory = await contract.playerHistory(account);
-            playerData.gamesPlayed = Number(playerHistory.gamesPlayed);
-            playerData.totalRewards = Number(ethers.utils.formatUnits(playerHistory.totalRewards, 18));
-            playerData.totalReferrals = Number(playerHistory.totalReferrals);
-            playerData.referralPoints = Number(ethers.utils.formatUnits(playerHistory.referralRewards, 18));
-            playerData.hasClaimedWelcomeBonus = playerHistory.hasClaimedWelcomeBonus;
-            playerData.pendingPoints = Number(ethers.utils.formatUnits(playerHistory.internalBalance, 18));
-            playerData.flexibleStakeBalance = Number(ethers.utils.formatUnits(playerHistory.flexibleStakeBalance, 18));
-
-            for (let i = 0; i <= 3; i++) {
-                const balance = await contract.getLockedStakeBalance(account, i);
-                const startTime = await contract.getLockedStakeStartTime(account, i);
-                playerData.lockedStakeBalances[i] = Number(ethers.utils.formatUnits(balance, 18));
-                playerData.lockedStakeStartTimes[i] = Number(startTime) * 1000;
-            }
-
-            const walletBalance = await contract.balanceOf(account);
-            playerData.walletBalance = Number(ethers.utils.formatUnits(walletBalance, 18));
-
-            const onChainRewards = await contract.getRewardHistory(account);
-            onChainRewards.forEach(reward => {
+        const connectWalletBtn =
