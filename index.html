@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Block Snakes Game</title>
+    <link rel="icon" href="https://www.google.com/favicon.ico" type="image/x-icon">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,6 +13,7 @@
             margin: 0;
             padding: 20px;
             color: #333;
+            overflow-x: hidden;
         }
         h1 {
             color: #800080;
@@ -21,6 +23,8 @@
             background-color: #0a0a23;
             margin: 10px auto;
             display: block;
+            max-width: 100%;
+            height: auto;
         }
         button {
             padding: 10px 20px;
@@ -30,6 +34,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
         button:hover {
             background-color: #a100a1;
@@ -39,6 +44,7 @@
             margin: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            font-size: 16px;
         }
         #loadingIndicator {
             display: none;
@@ -50,6 +56,7 @@
             color: white;
             padding: 20px;
             border-radius: 10px;
+            z-index: 1000;
         }
         #gameOverPopup {
             display: none;
@@ -67,7 +74,7 @@
         .history-section {
             margin-top: 20px;
             text-align: left;
-            max-width: 600px;
+            max-width: 90%;
             margin-left: auto;
             margin-right: auto;
         }
@@ -84,6 +91,18 @@
             margin: 5px 0;
             border-radius: 5px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            word-wrap: break-word;
+        }
+        @media (max-width: 600px) {
+            button, input, select {
+                width: 100%;
+                margin: 5px 0;
+                font-size: 14px;
+            }
+            canvas {
+                width: 100%;
+                height: auto;
+            }
         }
     </style>
 </head>
@@ -244,7 +263,7 @@
     <div id="loadingIndicator">Loading...</div>
 
     <!-- Scripts -->
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
