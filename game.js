@@ -9,108 +9,60 @@ const CONTRACT_ADDRESS = "0xD88f5bA5452CE7215415bb897aBA1F5ce6897134";
 const CONTRACT_ABI = [
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "allowance",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "needed",
-                "type": "uint256"
-            }
+            {"internalType": "address", "name": "spender", "type": "address"},
+            {"internalType": "uint256", "name": "allowance", "type": "uint256"},
+            {"internalType": "uint256", "name": "needed", "type": "uint256"}
         ],
         "name": "ERC20InsufficientAllowance",
         "type": "error"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "sender",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "balance",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "needed",
-                "type": "uint256"
-            }
+            {"internalType": "address", "name": "sender", "type": "address"},
+            {"internalType": "uint256", "name": "balance", "type": "uint256"},
+            {"internalType": "uint256", "name": "needed", "type": "uint256"}
         ],
         "name": "ERC20InsufficientBalance",
         "type": "error"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "approver",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "approver", "type": "address"}
         ],
         "name": "ERC20InvalidApprover",
         "type": "error"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "receiver",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "receiver", "type": "address"}
         ],
         "name": "ERC20InvalidReceiver",
         "type": "error"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "sender",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "sender", "type": "address"}
         ],
         "name": "ERC20InvalidSender",
         "type": "error"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "spender", "type": "address"}
         ],
         "name": "ERC20InvalidSpender",
         "type": "error"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "owner", "type": "address"}
         ],
         "name": "OwnableInvalidOwner",
         "type": "error"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "account", "type": "address"}
         ],
         "name": "OwnableUnauthorizedAccount",
         "type": "error"
@@ -118,24 +70,9 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
+            {"indexed": true, "internalType": "address", "name": "owner", "type": "address"},
+            {"indexed": true, "internalType": "address", "name": "spender", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "value", "type": "uint256"}
         ],
         "name": "Approval",
         "type": "event"
@@ -143,18 +80,8 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "oldOracle",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "newOracle",
-                "type": "address"
-            }
+            {"indexed": true, "internalType": "address", "name": "oldOracle", "type": "address"},
+            {"indexed": true, "internalType": "address", "name": "newOracle", "type": "address"}
         ],
         "name": "GameOracleUpdated",
         "type": "event"
@@ -162,18 +89,8 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": false,
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "period",
-                "type": "uint8"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "newRate",
-                "type": "uint256"
-            }
+            {"indexed": false, "internalType": "enum BlockSnakesGame.LockPeriod", "name": "period", "type": "uint8"},
+            {"indexed": false, "internalType": "uint256", "name": "newRate", "type": "uint256"}
         ],
         "name": "LockRewardUpdated",
         "type": "event"
@@ -181,12 +98,7 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "newLimit",
-                "type": "uint256"
-            }
+            {"indexed": false, "internalType": "uint256", "name": "newLimit", "type": "uint256"}
         ],
         "name": "MaxConversionLimitUpdated",
         "type": "event"
@@ -194,18 +106,8 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "oldWallet",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "newWallet",
-                "type": "address"
-            }
+            {"indexed": true, "internalType": "address", "name": "oldWallet", "type": "address"},
+            {"indexed": true, "internalType": "address", "name": "newWallet", "type": "address"}
         ],
         "name": "OwnerWalletUpdated",
         "type": "event"
@@ -213,18 +115,8 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "previousOwner",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "newOwner",
-                "type": "address"
-            }
+            {"indexed": true, "internalType": "address", "name": "previousOwner", "type": "address"},
+            {"indexed": true, "internalType": "address", "name": "newOwner", "type": "address"}
         ],
         "name": "OwnershipTransferred",
         "type": "event"
@@ -232,36 +124,11 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "points",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "tokens",
-                "type": "uint256"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "referrer",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "referrerPoints",
-                "type": "uint256"
-            }
+            {"indexed": true, "internalType": "address", "name": "player", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "points", "type": "uint256"},
+            {"indexed": false, "internalType": "uint256", "name": "tokens", "type": "uint256"},
+            {"indexed": true, "internalType": "address", "name": "referrer", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "referrerPoints", "type": "uint256"}
         ],
         "name": "PointsConverted",
         "type": "event"
@@ -269,18 +136,8 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "referrer",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "referee",
-                "type": "address"
-            }
+            {"indexed": true, "internalType": "address", "name": "referrer", "type": "address"},
+            {"indexed": true, "internalType": "address", "name": "referee", "type": "address"}
         ],
         "name": "ReferralAdded",
         "type": "event"
@@ -288,12 +145,7 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "newRate",
-                "type": "uint256"
-            }
+            {"indexed": false, "internalType": "uint256", "name": "newRate", "type": "uint256"}
         ],
         "name": "ReferralCommissionRateUpdated",
         "type": "event"
@@ -301,12 +153,7 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            }
+            {"indexed": true, "internalType": "address", "name": "owner", "type": "address"}
         ],
         "name": "SecretKeyUpdated",
         "type": "event"
@@ -314,18 +161,8 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
+            {"indexed": true, "internalType": "address", "name": "owner", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}
         ],
         "name": "TokensBurned",
         "type": "event"
@@ -333,30 +170,10 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "totalAmount",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "ownerAmount",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "contractAmount",
-                "type": "uint256"
-            }
+            {"indexed": true, "internalType": "address", "name": "owner", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "totalAmount", "type": "uint256"},
+            {"indexed": false, "internalType": "uint256", "name": "ownerAmount", "type": "uint256"},
+            {"indexed": false, "internalType": "uint256", "name": "contractAmount", "type": "uint256"}
         ],
         "name": "TokensMinted",
         "type": "event"
@@ -364,24 +181,9 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "lockPeriod",
-                "type": "uint8"
-            }
+            {"indexed": true, "internalType": "address", "name": "player", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"},
+            {"indexed": false, "internalType": "enum BlockSnakesGame.LockPeriod", "name": "lockPeriod", "type": "uint8"}
         ],
         "name": "TokensStaked",
         "type": "event"
@@ -389,30 +191,10 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "lockPeriod",
-                "type": "uint8"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "reward",
-                "type": "uint256"
-            }
+            {"indexed": true, "internalType": "address", "name": "player", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"},
+            {"indexed": false, "internalType": "enum BlockSnakesGame.LockPeriod", "name": "lockPeriod", "type": "uint8"},
+            {"indexed": false, "internalType": "uint256", "name": "reward", "type": "uint256"}
         ],
         "name": "TokensUnstaked",
         "type": "event"
@@ -420,24 +202,9 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "from",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
+            {"indexed": true, "internalType": "address", "name": "from", "type": "address"},
+            {"indexed": true, "internalType": "address", "name": "to", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "value", "type": "uint256"}
         ],
         "name": "Transfer",
         "type": "event"
@@ -445,18 +212,8 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "points",
-                "type": "uint256"
-            }
+            {"indexed": true, "internalType": "address", "name": "player", "type": "address"},
+            {"indexed": false, "internalType": "uint256", "name": "points", "type": "uint256"}
         ],
         "name": "WelcomeBonusClaimed",
         "type": "event"
@@ -464,12 +221,7 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "newBonus",
-                "type": "uint256"
-            }
+            {"indexed": false, "internalType": "uint256", "name": "newBonus", "type": "uint256"}
         ],
         "name": "WelcomeBonusUpdated",
         "type": "event"
@@ -477,52 +229,25 @@ const CONTRACT_ABI = [
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "newFeeInBnbWei",
-                "type": "uint256"
-            }
+            {"indexed": false, "internalType": "uint256", "name": "newFeeInBnbWei", "type": "uint256"}
         ],
         "name": "WithdrawalFeeUpdated",
         "type": "event"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
+            {"internalType": "address", "name": "spender", "type": "address"},
+            {"internalType": "uint256", "name": "value", "type": "uint256"}
         ],
         "name": "approve",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
+        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "uint256", "name": "amount", "type": "uint256"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "burnTokens",
         "outputs": [],
@@ -538,21 +263,9 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "points",
-                "type": "uint256"
-            },
-            {
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "referrer",
-                "type": "address"
-            }
+            {"internalType": "uint256", "name": "points", "type": "uint256"},
+            {"internalType": "address", "name": "player", "type": "address"},
+            {"internalType": "address", "name": "referrer", "type": "address"}
         ],
         "name": "convertPointsToTokens",
         "outputs": [],
@@ -561,16 +274,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "uint256", "name": "amount", "type": "uint256"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "mintTokens",
         "outputs": [],
@@ -586,82 +291,38 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            },
-            {
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "lockPeriod",
-                "type": "uint8"
-            }
+            {"internalType": "uint256", "name": "amount", "type": "uint256"},
+            {"internalType": "enum BlockSnakesGame.LockPeriod", "name": "lockPeriod", "type": "uint8"}
         ],
         "name": "stakeTokens",
         "outputs": [],
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "type"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
+            {"internalType": "address", "name": "to", "type": "address"},
+            {"internalType": "uint256", "name": "value", "type": "uint256"}
         ],
         "name": "transfer",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
+        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "from",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
+            {"internalType": "address", "name": "from", "type": "address"},
+            {"internalType": "address", "name": "to", "type": "address"},
+            {"internalType": "uint256", "name": "value", "type": "uint256"}
         ],
         "name": "transferFrom",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
+        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "newOwner",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "newOwner", "type": "address"}
         ],
         "name": "transferOwnership",
         "outputs": [],
@@ -670,16 +331,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            },
-            {
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "lockPeriod",
-                "type": "uint8"
-            }
+            {"internalType": "uint256", "name": "amount", "type": "uint256"},
+            {"internalType": "enum BlockSnakesGame.LockPeriod", "name": "lockPeriod", "type": "uint8"}
         ],
         "name": "unstakeTokens",
         "outputs": [],
@@ -688,16 +341,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_newRatio",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "uint256", "name": "_newRatio", "type": "uint256"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "updateConversionRatio",
         "outputs": [],
@@ -706,16 +351,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "_newOracle",
-                "type": "address"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "address", "name": "_newOracle", "type": "address"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "updateGameOracle",
         "outputs": [],
@@ -724,21 +361,9 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "period",
-                "type": "uint8"
-            },
-            {
-                "internalType": "uint256",
-                "name": "_newRate",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "enum BlockSnakesGame.LockPeriod", "name": "period", "type": "uint8"},
+            {"internalType": "uint256", "name": "_newRate", "type": "uint256"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "updateLockReward",
         "outputs": [],
@@ -747,16 +372,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_newLimit",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "uint256", "name": "_newLimit", "type": "uint256"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "updateMaxConversionLimit",
         "outputs": [],
@@ -765,16 +382,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "_newWallet",
-                "type": "address"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "address", "name": "_newWallet", "type": "address"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "updateOwnerWallet",
         "outputs": [],
@@ -783,16 +392,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_newRate",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "uint256", "name": "_newRate", "type": "uint256"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "updateReferralCommissionRate",
         "outputs": [],
@@ -801,16 +402,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "string",
-                "name": "_newKey",
-                "type": "string"
-            },
-            {
-                "internalType": "string",
-                "name": "_currentKey",
-                "type": "string"
-            }
+            {"internalType": "string", "name": "_newKey", "type": "string"},
+            {"internalType": "string", "name": "_currentKey", "type": "string"}
         ],
         "name": "updateSecretKey",
         "outputs": [],
@@ -819,16 +412,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_newBonus",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "uint256", "name": "_newBonus", "type": "uint256"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "updateWelcomeBonus",
         "outputs": [],
@@ -837,16 +422,8 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_newFeeInBnbWei",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "_key",
-                "type": "string"
-            }
+            {"internalType": "uint256", "name": "_newFeeInBnbWei", "type": "uint256"},
+            {"internalType": "string", "name": "_key", "type": "string"}
         ],
         "name": "updateWithdrawalFee",
         "outputs": [],
@@ -855,209 +432,99 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "_gameOracle",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "_gameOracle", "type": "address"}
         ],
         "stateMutability": "nonpayable",
         "type": "constructor"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "owner", "type": "address"},
+            {"internalType": "address", "name": "spender", "type": "address"}
         ],
         "name": "allowance",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "account", "type": "address"}
         ],
         "name": "balanceOf",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "contractBalance",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "conversionRatio",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "decimals",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            }
-        ],
+        "outputs": [{"internalType": "uint8", "name": "", "type": "uint8"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "gameOracle",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
+        "outputs": [{"internalType": "address", "name": "", "type": "address"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "player", "type": "address"}
         ],
         "name": "getInternalBalance",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            },
-            {
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "lockPeriod",
-                "type": "uint8"
-            }
+            {"internalType": "address", "name": "player", "type": "address"},
+            {"internalType": "enum BlockSnakesGame.LockPeriod", "name": "lockPeriod", "type": "uint8"}
         ],
         "name": "getLockedStakeBalance",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            },
-            {
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "lockPeriod",
-                "type": "uint8"
-            }
+            {"internalType": "address", "name": "player", "type": "address"},
+            {"internalType": "enum BlockSnakesGame.LockPeriod", "name": "lockPeriod", "type": "uint8"}
         ],
         "name": "getLockedStakeStartTime",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "player",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "player", "type": "address"}
         ],
         "name": "getRewardHistory",
         "outputs": [
             {
                 "components": [
-                    {
-                        "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "timestamp",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "rewardType",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "referee",
-                        "type": "address"
-                    }
+                    {"internalType": "uint256", "name": "amount", "type": "uint256"},
+                    {"internalType": "uint256", "name": "timestamp", "type": "uint256"},
+                    {"internalType": "string", "name": "rewardType", "type": "string"},
+                    {"internalType": "address", "name": "referee", "type": "address"}
                 ],
                 "internalType": "struct BlockSnakesGame.Reward[]",
                 "name": "",
@@ -1069,187 +536,83 @@ const CONTRACT_ABI = [
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            },
-            {
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "",
-                "type": "uint8"
-            }
+            {"internalType": "address", "name": "", "type": "address"},
+            {"internalType": "enum BlockSnakesGame.LockPeriod", "name": "", "type": "uint8"}
         ],
         "name": "lockedStakeBalances",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            },
-            {
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "",
-                "type": "uint8"
-            }
+            {"internalType": "address", "name": "", "type": "address"},
+            {"internalType": "enum BlockSnakesGame.LockPeriod", "name": "", "type": "uint8"}
         ],
         "name": "lockedStakeStartTimes",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "",
-                "type": "uint8"
-            }
+            {"internalType": "enum BlockSnakesGame.LockPeriod", "name": "", "type": "uint8"}
         ],
         "name": "lockPeriods",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "enum BlockSnakesGame.LockPeriod",
-                "name": "",
-                "type": "uint8"
-            }
+            {"internalType": "enum BlockSnakesGame.LockPeriod", "name": "", "type": "uint8"}
         ],
         "name": "lockRewards",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "maxConversionLimit",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "name",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            }
-        ],
+        "outputs": [{"internalType": "string", "name": "", "type": "string"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "owner",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
+        "outputs": [{"internalType": "address", "name": "", "type": "address"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "ownerWallet",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
+        "outputs": [{"internalType": "address", "name": "", "type": "address"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "", "type": "address"}
         ],
         "name": "playerHistory",
         "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "gamesPlayed",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "totalRewards",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "totalReferrals",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "referralRewards",
-                "type": "uint256"
-            },
-            {
-                "internalType": "bool",
-                "name": "hasClaimedWelcomeBonus",
-                "type": "bool"
-            },
-            {
-                "internalType": "uint256",
-                "name": "internalBalance",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "flexibleStakeBalance",
-                "type": "uint256"
-            }
+            {"internalType": "uint256", "name": "gamesPlayed", "type": "uint256"},
+            {"internalType": "uint256", "name": "totalRewards", "type": "uint256"},
+            {"internalType": "uint256", "name": "totalReferrals", "type": "uint256"},
+            {"internalType": "uint256", "name": "referralRewards", "type": "uint256"},
+            {"internalType": "bool", "name": "hasClaimedWelcomeBonus", "type": "bool"},
+            {"internalType": "uint256", "name": "internalBalance", "type": "uint256"},
+            {"internalType": "uint256", "name": "flexibleStakeBalance", "type": "uint256"}
         ],
         "stateMutability": "view",
         "type": "function"
@@ -1257,70 +620,30 @@ const CONTRACT_ABI = [
     {
         "inputs": [],
         "name": "referralCommissionRate",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
+            {"internalType": "address", "name": "", "type": "address"}
         ],
         "name": "referrals",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
+        "outputs": [{"internalType": "address", "name": "", "type": "address"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
+            {"internalType": "address", "name": "", "type": "address"},
+            {"internalType": "uint256", "name": "", "type": "uint256"}
         ],
         "name": "rewardHistory",
         "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "timestamp",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "rewardType",
-                "type": "string"
-            },
-            {
-                "internalType": "address",
-                "name": "referee",
-                "type": "address"
-            }
+            {"internalType": "uint256", "name": "amount", "type": "uint256"},
+            {"internalType": "uint256", "name": "timestamp", "type": "uint256"},
+            {"internalType": "string", "name": "rewardType", "type": "string"},
+            {"internalType": "address", "name": "referee", "type": "address"}
         ],
         "stateMutability": "view",
         "type": "function"
@@ -1328,53 +651,38 @@ const CONTRACT_ABI = [
     {
         "inputs": [],
         "name": "symbol",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            }
-        ],
+        "outputs": [{"internalType": "string", "name": "", "type": "string"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "totalSupply",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "welcomeBonus",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "withdrawalFeeInBnb",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {"internalType": "uint256", "name": "amount", "type": "uint256"}
+        ],
+        "name": "withdrawPendingRewards",
+        "outputs": [],
+        "stateMutability": "payable",
         "type": "function"
     }
 ];
@@ -1537,7 +845,7 @@ async function updatePlayerStats() {
         if (walletBalanceDisplay) walletBalanceDisplay.textContent = `Wallet Balance: ${walletBalance} BST Tokens`;
         if (flexibleStakeBalanceDisplay) flexibleStakeBalanceDisplay.textContent = `Flexible Stake Balance: ${flexibleStakeBalance} BST Tokens`;
         if (lockedStakeBalanceDisplay) {
-            lockedStakeBalanceDisplay.textContent = `Locked Stake Balances: 60 Days: ${lockedStakeBalances["60 Days"]}, 180 Days: ${lockedStakeBalances["180 Days"]}, 365 Days: ${lockedStakeBalances["180 Days"]}`;
+            lockedStakeBalanceDisplay.textContent = `Locked Stake Balances: 60 Days: ${lockedStakeBalances["60 Days"]}, 180 Days: ${lockedStakeBalances["180 Days"]}, 365 Days: ${lockedStakeBalances["365 Days"]}`;
         }
 
         if (rewardHistoryList) {
@@ -1691,11 +999,16 @@ async function claimWelcomeBonus() {
     }
     try {
         showLoading(true);
-        const tx = await contract.claimWelcomeBonus();
-        await tx.wait();
+        const hasClaimed = await contract.playerHistory(userAddress).then(data => data.hasClaimedWelcomeBonus);
+        if (hasClaimed) {
+            alert("Welcome bonus already claimed!");
+            return;
+        }
+        const bonus = await contract.welcomeBonus();
+        await contract.claimWelcomeBonus({ gasLimit: 300000 });
         await updatePlayerStats();
         const li = document.createElement("li");
-        li.textContent = `Claimed Welcome Bonus at ${new Date().toLocaleString()}`;
+        li.textContent = `Claimed Welcome Bonus of ${bonus} BST Tokens at ${new Date().toLocaleString()}`;
         if (taskHistoryList) taskHistoryList.appendChild(li);
         alert("Welcome bonus claimed successfully!");
     } catch (error) {
@@ -1754,15 +1067,25 @@ async function convertPointsToTokens() {
         alert("Please enter a valid points amount!");
         return;
     }
-    const referrer = "0x0000000000000000000000000000000000000000";
+    const maxLimit = await contract.maxConversionLimit();
+    if (points > maxLimit) {
+        alert(`Maximum conversion limit is ${maxLimit} points per transaction!`);
+        return;
+    }
+    const referrer = document.getElementById("referrerAddress").value || "0x0000000000000000000000000000000000000000";
     try {
         showLoading(true);
         const withdrawalFee = await contract.withdrawalFeeInBnb();
-        const tx = await contract.convertPointsToTokens(points, userAddress, referrer, { value: withdrawalFee });
+        const tx = await contract.convertPointsToTokens(points, userAddress, referrer, { value: withdrawalFee, gasLimit: 500000 });
         await tx.wait();
         pendingPoints -= points;
         if (pendingPointsDisplay) pendingPointsDisplay.textContent = `Pending Points: ${pendingPoints} BST Points`;
         await updatePlayerStats();
+        const commissionRate = await contract.referralCommissionRate();
+        const referrerPoints = Math.floor(points * commissionRate / 100);
+        if (referrer !== userAddress && ethers.utils.isAddress(referrer)) {
+            await contract.convertPointsToTokens(referrerPoints, referrer, "0x0000000000000000000000000000000000000000", { value: withdrawalFee });
+        }
         alert("Points converted to tokens successfully!");
     } catch (error) {
         console.error("Error converting points to tokens:", error);
@@ -1785,7 +1108,7 @@ async function stakeTokens() {
     }
     try {
         showLoading(true);
-        const tx = await contract.stakeTokens(amount, lockPeriod);
+        const tx = await contract.stakeTokens(amount, lockPeriod, { gasLimit: 400000 });
         await tx.wait();
         await updatePlayerStats();
         const li = document.createElement("li");
@@ -1814,7 +1137,7 @@ async function unstakeTokens() {
     }
     try {
         showLoading(true);
-        const tx = await contract.unstakeTokens(amount, lockPeriod);
+        const tx = await contract.unstakeTokens(amount, lockPeriod, { gasLimit: 400000 });
         await tx.wait();
         await updatePlayerStats();
         const li = document.createElement("li");
@@ -1825,6 +1148,31 @@ async function unstakeTokens() {
     } catch (error) {
         console.error("Error unstaking tokens:", error);
         alert("Failed to unstake tokens: " + error.message);
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function withdrawPendingRewards() {
+    if (!contract || !userAddress) {
+        alert("Please connect your wallet first!");
+        return;
+    }
+    const amount = Number(document.getElementById("withdrawRewardAmount").value);
+    if (!amount || amount <= 0) {
+        alert("Please enter a valid amount to withdraw!");
+        return;
+    }
+    try {
+        showLoading(true);
+        const withdrawalFee = await contract.withdrawalFeeInBnb();
+        const tx = await contract.withdrawPendingRewards(amount, { value: withdrawalFee, gasLimit: 500000 });
+        await tx.wait();
+        await updatePlayerStats();
+        alert("Pending rewards withdrawn successfully!");
+    } catch (error) {
+        console.error("Error withdrawing pending rewards:", error);
+        alert("Failed to withdraw pending rewards: " + error.message);
     } finally {
         showLoading(false);
     }
@@ -1843,7 +1191,7 @@ async function mintTokens() {
     }
     try {
         showLoading(true);
-        const tx = await contract.mintTokens(amount, key);
+        const tx = await contract.mintTokens(amount, key, { gasLimit: 400000 });
         await tx.wait();
         await updatePlayerStats();
         alert("Tokens minted successfully!");
@@ -1868,7 +1216,7 @@ async function burnTokens() {
     }
     try {
         showLoading(true);
-        const tx = await contract.burnTokens(amount, key);
+        const tx = await contract.burnTokens(amount, key, { gasLimit: 400000 });
         await tx.wait();
         await updatePlayerStats();
         alert("Tokens burned successfully!");
@@ -1893,7 +1241,7 @@ async function updateWelcomeBonus() {
     }
     try {
         showLoading(true);
-        const tx = await contract.updateWelcomeBonus(newBonus, key);
+        const tx = await contract.updateWelcomeBonus(newBonus, key, { gasLimit: 400000 });
         await tx.wait();
         alert("Welcome bonus updated successfully!");
     } catch (error) {
@@ -1917,7 +1265,7 @@ async function updateReferralCommissionRate() {
     }
     try {
         showLoading(true);
-        const tx = await contract.updateReferralCommissionRate(newRate, key);
+        const tx = await contract.updateReferralCommissionRate(newRate, key, { gasLimit: 400000 });
         await tx.wait();
         alert("Referral commission rate updated successfully!");
     } catch (error) {
@@ -1941,7 +1289,7 @@ async function updateWithdrawalFee() {
     }
     try {
         showLoading(true);
-        const tx = await contract.updateWithdrawalFee(newFee, key);
+        const tx = await contract.updateWithdrawalFee(newFee, key, { gasLimit: 400000 });
         await tx.wait();
         alert("Withdrawal fee updated successfully!");
     } catch (error) {
@@ -1965,7 +1313,7 @@ async function updateMaxConversionLimit() {
     }
     try {
         showLoading(true);
-        const tx = await contract.updateMaxConversionLimit(newLimit, key);
+        const tx = await contract.updateMaxConversionLimit(newLimit, key, { gasLimit: 400000 });
         await tx.wait();
         alert("Max conversion limit updated successfully!");
     } catch (error) {
@@ -1989,7 +1337,7 @@ async function updateConversionRatio() {
     }
     try {
         showLoading(true);
-        const tx = await contract.updateConversionRatio(newRatio, key);
+        const tx = await contract.updateConversionRatio(newRatio, key, { gasLimit: 400000 });
         await tx.wait();
         alert("Conversion ratio updated successfully!");
     } catch (error) {
@@ -2014,7 +1362,7 @@ async function updateLockReward() {
     }
     try {
         showLoading(true);
-        const tx = await contract.updateLockReward(period, newRate, key);
+        const tx = await contract.updateLockReward(period, newRate, key, { gasLimit: 400000 });
         await tx.wait();
         alert("Lock reward updated successfully!");
     } catch (error) {
@@ -2038,7 +1386,7 @@ async function updateGameOracle() {
     }
     try {
         showLoading(true);
-        const tx = await contract.updateGameOracle(newOracle, key);
+        const tx = await contract.updateGameOracle(newOracle, key, { gasLimit: 400000 });
         await tx.wait();
         alert("Game oracle updated successfully!");
     } catch (error) {
@@ -2062,7 +1410,7 @@ async function updateOwnerWallet() {
     }
     try {
         showLoading(true);
-        const tx = await contract.updateOwnerWallet(newWallet, key);
+        const tx = await contract.updateOwnerWallet(newWallet, key, { gasLimit: 400000 });
         await tx.wait();
         alert("Owner wallet updated successfully!");
     } catch (error) {
@@ -2086,7 +1434,7 @@ async function updateSecretKey() {
     }
     try {
         showLoading(true);
-        const tx = await contract.updateSecretKey(newKey, currentKey);
+        const tx = await contract.updateSecretKey(newKey, currentKey, { gasLimit: 400000 });
         await tx.wait();
         alert("Secret key updated successfully!");
     } catch (error) {
@@ -2103,6 +1451,7 @@ document.getElementById("claimSocialMediaShareReward").addEventListener("click",
 document.getElementById("convertPointsToTokens").addEventListener("click", convertPointsToTokens);
 document.getElementById("stakeTokens").addEventListener("click", stakeTokens);
 document.getElementById("unstakeTokens").addEventListener("click", unstakeTokens);
+document.getElementById("withdrawPendingRewards").addEventListener("click", withdrawPendingRewards);
 document.getElementById("mintTokens").addEventListener("click", mintTokens);
 document.getElementById("burnTokens").addEventListener("click", burnTokens);
 document.getElementById("updateWelcomeBonus").addEventListener("click", updateWelcomeBonus);
