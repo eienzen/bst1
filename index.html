@@ -2,278 +2,194 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://raw.githubusercontent.com; connect-src 'self' https://data-seed-prebsc-1-s1.bnbchain.org:8545 wss://data-seed-prebsc-1-s1.bnbchain.org:8545 https://data-seed-prebsc-2-s1.bnbchain.org:8545 wss://data-seed-prebsc-2-s1.bnbchain.org:8545 https://*.bnbchain.org wss://*.bnbchain.org; media-src 'self' https://raw.githubusercontent.com; object-src 'none';">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlockSnakes Game</title>
-    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/eienzen/blocksnakes/main/favicon.ico">
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="game.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #0a0a23, #1a1a3d);
-            color: #fff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
-        #header {
-            width: 100%;
-            background: linear-gradient(90deg, #2a2a5d, #00ffcc);
-            padding: 15px;
-            text-align: center;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            position: sticky;
-            top: 0;
-        }
-        #header h1 {
-            margin: 0 10px;
-            font-size: clamp(24px, 5vw, 36px);
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        #header p {
-            margin: 5px 10px;
-            font-size: clamp(14px, 3vw, 18px);
-        }
-        #content {
-            margin-top: 20px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-bottom: 20px;
-        }
         canvas {
-            border: 2px solid #00ffcc;
-            background: linear-gradient(45deg, #0a0a23, #1a1a3d);
-            border-radius: 5px;
-            margin: 15px 0;
-            max-width: 90vw;
-            max-height: 65vh;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+            border: 2px solid #000;
+            display: block;
+            margin: 0 auto;
         }
-        #gameInfo, #playerHistory, #stakingSection, #taskSection {
-            margin: 15px 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #2a2a5d, #3a3a7d);
-            border-radius: 10px;
-            width: 85%;
-            max-width: 650px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease;
-        }
-        #gameInfo:hover, #playerHistory:hover, #stakingSection:hover, #taskSection:hover {
-            transform: translateY(-2px);
-        }
-        #loadingIndicator {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #00ffcc;
-            padding: 25px;
-            border-radius: 10px;
-            display: none;
-            z-index: 2000;
-            font-size: 18px;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        .controls {
+            text-align: center;
+            margin-top: 20px;
         }
         button {
             padding: 10px 20px;
             margin: 5px;
-            background-color: #00ffcc;
-            color: #000;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
-            position: relative;
-            box-shadow: 0 0 5px rgba(0, 255, 204, 0.3);
-        }
-        button:hover {
-            background-color: #00ccaa;
-            transform: scale(1.05);
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.6);
-        }
-        button:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        button::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        button:hover::after {
-            opacity: 1;
-        }
-        input, select {
-            padding: 8px;
-            margin: 5px;
-            border-radius: 5px;
-            border: 1px solid #00ffcc;
-            background-color: #1a1a3d;
-            color: #fff;
             font-size: 16px;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        li {
-            margin: 5px 0;
-            background-color: #3a3a7d;
-            padding: 8px;
-            border-radius: 3px;
-            font-size: 14px;
-        }
-        h2, h3 {
-            color: #00ffcc;
-            margin: 10px 0;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-        #gameOverPopup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #2a2a5d, #3a3a7d);
-            padding: 25px;
-            border: 2px solid #00ffcc;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            z-index: 1000;
-            color: #fff;
-            text-align: center;
-            max-width: 90%;
-        }
         @media (max-width: 600px) {
-            #header {
-                padding: 10px;
-            }
-            #gameInfo, #playerHistory, #stakingSection, #taskSection {
-                width: 90%;
-                padding: 15px;
-            }
-            button, input, select {
-                width: 100%;
-                box-sizing: border-box;
+            canvas {
+                width: 90vw !important;
+                height: auto !important;
             }
         }
     </style>
 </head>
 <body>
-    <div id="header">
-        <h1>BlockSnakes Game</h1>
-        <p id="walletAddress"></p>
+    <div id="gameCanvas"></div>
+    <div class="controls">
+        <button onclick="startGame()">Start Game</button>
+        <button onclick="claimWelcomeBonus()">Claim Welcome Bonus</button>
+        <button onclick="convertPoints()">Convert Points</button>
+        <button onclick="stakeTokens()">Stake Tokens</button>
+        <button onclick="unstakeTokens()">Unstake Tokens</button>
+        <button onclick="mintTokens()">Mint Tokens (Owner)</button>
+        <button onclick="burnTokens()">Burn Tokens (Owner)</button>
+        <button onclick="updateGameOracle()">Update Game Oracle (Owner)</button>
     </div>
-    <div id="content">
-        <button id="connectWallet" data-tooltip="Connect your wallet to start playing">Connect Wallet</button>
-        <button id="disconnectWallet" style="display: none;" data-tooltip="Disconnect your wallet">Disconnect Wallet</button>
-        <button id="playGame" data-tooltip="Start a new game session">Play Game</button>
-        <canvas id="gameCanvas"></canvas>
-        <div id="gameInfo">
-            <h2>Game Info</h2>
-            <p id="boxesEaten">Boxes Eaten: 0</p>
-            <p id="pendingPoints">Pending Points: 0 BST Points</p>
-        </div>
-        <div id="taskSection">
-            <h2>Tasks</h2>
-            <button id="claimWelcomeBonus" data-tooltip="Claim your one-time welcome bonus">Claim Welcome Bonus</button>
-            <button id="claimDailyLoginReward" data-tooltip="Claim your daily login reward" disabled>Claim Daily Login Reward</button>
-            <button id="claimSocialMediaShareReward" data-tooltip="Claim reward for sharing on social media" disabled>Claim Social Media Share Reward</button>
-            <button id="getReferralLink" data-tooltip="Get your unique referral link">Get Referral Link</button>
-            <h3>Convert Points to Tokens</h3>
-            <input type="number" id="convertPointsAmount" placeholder="Points to Convert" min="0" step="0.01">
-            <button id="convertPoints" data-tooltip="Convert your points to BST tokens">Convert Points</button>
-        </div>
-        <div id="stakingSection">
-            <h2>Staking</h2>
-            <input type="number" id="stakeAmount" placeholder="Amount to Stake" min="0" step="0.01">
-            <select id="lockPeriod">
-                <option value="0">Flexible (2% APR)</option>
-                <option value="1">60 Days (4% APR)</option>
-                <option value="2">180 Days (6% APR)</option>
-                <option value="3">365 Days (10% APR)</option>
-            </select>
-            <button id="stakeTokens" data-tooltip="Stake your BST tokens to earn rewards">Stake Tokens</button>
-            <input type="number" id="unstakeAmount" placeholder="Amount to Unstake" min="0" step="0.01">
-            <select id="unlockPeriod">
-                <option value="0">Flexible</option>
-                <option value="1">60 Days</option>
-                <option value="2">180 Days</option>
-                <option value="3">365 Days</option>
-            </select>
-            <button id="unstakeTokens" data-tooltip="Unstake your BST tokens">Unstake Tokens</button>
-        </div>
-        <div id="playerHistory">
-            <h2>Player History</h2>
-            <p id="gamesPlayed">Games Played: 0</p>
-            <p id="totalPoints">Total Points: 0 BST Points</p>
-            <p id="totalGameRewards">Total Token Rewards: 0 BST Tokens</p>
-            <p id="totalReferrals">Total Referrals: 0</p>
-            <p id="referralPoints">Referral Points: 0 BST Points</p>
-            <p id="pendingPointsText">Pending Points: 0 BST Points</p>
-            <p id="flexibleStakeBalance">Flexible Stake Balance: 0 BST Tokens</p>
-            <p id="lockedStakeBalance60D">Locked Stake Balance (60D): 0 BST Tokens</p>
-            <p id="lockedStakeBalance180D">Locked Stake Balance (180D): 0 BST Tokens</p>
-            <p id="lockedStakeBalance365D">Locked Stake Balance (365D): 0 BST Tokens</p>
-            <p id="walletBalance">Wallet Balance: 0 BST Tokens</p>
-            <h3>Reward History</h3>
-            <ul id="rewardHistoryList"></ul>
-            <h3>Task History</h3>
-            <ul id="taskHistoryList"></ul>
-            <h3>Staking History</h3>
-            <ul id="stakingHistoryList"></ul>
-        </div>
-    </div>
-    <div id="loadingIndicator">Loading...</div>
-    <div id="gameOverPopup">
-        <h2>Game Over!</h2>
-        <p id="finalBoxesEaten"></p>
-        <p id="finalPoints"></p>
-        <button id="closePopup" data-tooltip="Close and reset the game">Close</button>
-    </div>
-    <audio id="eatingSound">
-        <source src="https://raw.githubusercontent.com/eienzen/blocksnakes/main/eating.mp3" type="audio/mp3">
-    </audio>
-    <audio id="gameOverSound">
-        <source src="https://raw.githubusercontent.com/eienzen/blocksnakes/main/gameover.mp3" type="audio/mp3">
-    </audio>
-    <audio id="victorySound">
-        <source src="https://raw.githubusercontent.com/eienzen/blocksnakes/main/victory.mp3" type="audio/mp3">
-    </audio>
+
+    <script>
+        let snake, food, score, gameState;
+        const gridSize = 20;
+        const canvasSize = 400;
+        const contractAddress = "0x4fe4bF5670405772941d0D1e5706863A13f17B28";
+        const abi = [/* Your ABI here */];
+        let web3, contract, accounts;
+
+        // Initialize Web3 and Contract
+        async function initWeb3() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: "eth_requestAccounts" });
+                accounts = await web3.eth.getAccounts();
+                contract = new web3.eth.Contract(abi, contractAddress);
+            } else {
+                alert("Please install MetaMask!");
+            }
+        }
+
+        // p5.js Setup
+        function setup() {
+            let canvas = createCanvas(canvasSize, canvasSize);
+            canvas.parent("gameCanvas");
+            frameRate(10);
+            resetGame();
+        }
+
+        function draw() {
+            background(220);
+            if (gameState === "playing") {
+                updateGame();
+                drawGame();
+            }
+        }
+
+        function resetGame() {
+            snake = [{ x: 10, y: 10 }];
+            food = { x: floor(random(0, canvasSize / gridSize)), y: floor(random(0, canvasSize / gridSize)) };
+            score = 0;
+            gameState = "playing";
+        }
+
+        function updateGame() {
+            const head = { x: snake[0].x, y: snake[0].y };
+            if (keyIsDown(LEFT_ARROW)) head.x -= 1;
+            if (keyIsDown(RIGHT_ARROW)) head.x += 1;
+            if (keyIsDown(UP_ARROW)) head.y -= 1;
+            if (keyIsDown(DOWN_ARROW)) head.y += 1;
+
+            head.x = (head.x + canvasSize / gridSize) % (canvasSize / gridSize);
+            head.y = (head.y + canvasSize / gridSize) % (canvasSize / gridSize);
+
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                food = { x: floor(random(0, canvasSize / gridSize)), y: floor(random(0, canvasSize / gridSize)) };
+            } else {
+                snake.pop();
+            }
+            snake.unshift(head);
+
+            if (snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)) {
+                gameState = "over";
+            }
+        }
+
+        function drawGame() {
+            // Draw Snake with Eyes and Body
+            fill(0, 255, 0); // Green body
+            for (let i = 0; i < snake.length; i++) {
+                rect(snake[i].x * gridSize, snake[i].y * gridSize, gridSize - 2, gridSize - 2, 5);
+                if (i === 0) {
+                    // Draw Eyes
+                    fill(255); // White eyes
+                    ellipse(snake[i].x * gridSize + 4, snake[i].y * gridSize + 4, 4, 4);
+                    ellipse(snake[i].x * gridSize + 12, snake[i].y * gridSize + 4, 4, 4);
+                    fill(0); // Black pupils
+                    ellipse(snake[i].x * gridSize + 4, snake[i].y * gridSize + 4, 2, 2);
+                    ellipse(snake[i].x * gridSize + 12, snake[i].y * gridSize + 4, 2, 2);
+                }
+            }
+
+            // Draw Food
+            fill(255, 0, 0); // Red food
+            rect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2, 5);
+
+            // Draw Score
+            fill(0);
+            textSize(16);
+            text(`Score: ${score}`, 10, 20);
+        }
+
+        // Game Controls
+        function startGame() {
+            resetGame();
+        }
+
+        async function claimWelcomeBonus() {
+            await contract.methods.claimWelcomeBonus().send({ from: accounts[0] });
+            alert("Welcome bonus claimed!");
+        }
+
+        async function convertPoints() {
+            const points = parseInt(prompt("Enter points to convert:"));
+            const referrer = prompt("Enter referrer address (optional):") || "0x0000000000000000000000000000000000000000";
+            await contract.methods.convertPointsToTokens(points, accounts[0], referrer).send({ from: accounts[0], value: web3.utils.toWei("0.0002", "ether") });
+            alert("Points converted to tokens!");
+        }
+
+        async function stakeTokens() {
+            const amount = parseInt(prompt("Enter amount to stake:"));
+            const lockPeriod = parseInt(prompt("Enter lock period (0: Flexible, 1: 60 Days, 2: 180 Days, 3: 365 Days):"));
+            await contract.methods.stakeTokens(amount, lockPeriod).send({ from: accounts[0] });
+            alert("Tokens staked!");
+        }
+
+        async function unstakeTokens() {
+            const amount = parseInt(prompt("Enter amount to unstake:"));
+            const lockPeriod = parseInt(prompt("Enter lock period (0: Flexible, 1: 60 Days, 2: 180 Days, 3: 365 Days):"));
+            await contract.methods.unstakeTokens(amount, lockPeriod).send({ from: accounts[0] });
+            alert("Tokens unstaked!");
+        }
+
+        async function mintTokens() {
+            const amount = parseInt(prompt("Enter amount to mint:"));
+            const key = prompt("Enter secret key:");
+            await contract.methods.mintTokens(amount, key).send({ from: accounts[0] });
+            alert("Tokens minted!");
+        }
+
+        async function burnTokens() {
+            const amount = parseInt(prompt("Enter amount to burn:"));
+            const key = prompt("Enter secret key:");
+            await contract.methods.burnTokens(amount, key).send({ from: accounts[0] });
+            alert("Tokens burned!");
+        }
+
+        async function updateGameOracle() {
+            const newOracle = prompt("Enter new oracle address:");
+            const key = prompt("Enter secret key:");
+            await contract.methods.updateGameOracle(newOracle, key).send({ from: accounts[0] });
+            alert("Game oracle updated!");
+        }
+
+        // Initialize on load
+        window.onload = async () => {
+            await initWeb3();
+        };
+    </script>
 </body>
 </html>
