@@ -1,142 +1,219 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://raw.githubusercontent.com; connect-src 'self' https://data-seed-prebsc-1-s1.bnbchain.org:8545/ wss://data-seed-prebsc-1-s1.bnbchain.org:8545/ https://data-seed-prebsc-2-s1.bnbchain.org:8545/ wss://data-seed-prebsc-2-s1.bnbchain.org:8545/ https://*.bnbchain.org wss://*.bnbchain.org; media-src 'self' https://github.com https://raw.githubusercontent.com;">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>BlockSnakes Game</title>
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/eienzen/blocksnakes/main/favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js" integrity="sha384-6z5zS2b0bW+2Qevvlyp2zS2b0bW+2Qevvlyp2zS2b0bW+2Qevvlyp2zS2b0bW+2Q==" crossorigin="anonymous"></script>
+    <script src="game.js"></script>
     <style>
         body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a23, #1a1a3d);
+            color: #fff;
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
             min-height: 100vh;
-            margin: 0;
-            background-color: #e0e0e0;
         }
-        #gameContainer {
+        #header {
+            width: 100%;
+            background: linear-gradient(90deg, #2a2a5d, #00ffcc);
+            padding: 20px;
             text-align: center;
-            background-color: #ffffff;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        #header h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        #header p {
+            margin: 5px;
+            font-size: 18px;
+        }
+        #content {
+            margin-top: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            border: 2px solid #00ffcc;
+            background: linear-gradient(45deg, #0a0a23, #1a1a3d);
+            border-radius: 5px;
+            margin: 20px 0;
+            max-width: 90vw;
+            max-height: 70vh;
+        }
+        #gameInfo, #playerHistory, #stakingSection, #taskSection {
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #2a2a5d, #3a3a7d);
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        #loadingIndicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 2000;
         }
-        #gameCanvas {
-            border: 2px solid #333;
-            background-color: #f5f5f5;
-            border-radius: 5px;
-        }
-        #score, #highScore, #bstPoints {
-            font-size: 18px;
-            margin: 10px 0;
-            color: #333;
-        }
-        #connectWallet, #claimBonus, #convertPoints, #stakeTokens, #unstakeTokens, #playAgain {
+        button {
             padding: 10px 20px;
             margin: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
+            background-color: #00ffcc;
+            color: #000;
             border: none;
             border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
             transition: background-color 0.3s;
         }
-        #connectWallet:hover, #claimBonus:hover, #convertPoints:hover, #stakeTokens:hover, #unstakeTokens:hover, #playAgain:hover {
-            background-color: #45a049;
+        button:hover {
+            background-color: #00ccaa;
         }
-        #connectWallet:disabled, #claimBonus:disabled, #convertPoints:disabled, #stakeTokens:disabled, #unstakeTokens:disabled, #playAgain:disabled {
-            background-color: #cccccc;
+        button:disabled {
+            background-color: #666;
             cursor: not-allowed;
         }
-        #welcomeMessage {
-            font-size: 20px;
-            color: #333;
-            margin: 10px 0;
-        }
-        #historySection {
-            margin-top: 20px;
-            text-align: left;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 10px;
-            background-color: #f9f9f9;
+        input, select {
+            padding: 8px;
+            margin: 5px;
             border-radius: 5px;
+            border: 1px solid #00ffcc;
+            background-color: #1a1a3d;
+            color: #fff;
         }
-        #historySection h3 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
-            color: #333;
-        }
-        #historySection ul {
+        ul {
             list-style-type: none;
             padding: 0;
         }
-        #historySection li {
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
+        li {
+            margin: 5px 0;
+            background-color: #3a3a7d;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        h2, h3 {
+            color: #00ffcc;
+        }
+        #gameOverPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2a2a5d, #3a3a7d);
+            padding: 20px;
+            border: 2px solid #00ffcc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            color: #fff;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <div id="welcomeMessage"></div>
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
-        <div id="score">Score: 0</div>
-        <div id="highScore">High Score: 0</div>
-        <div id="bstPoints">BST Points: 0</div>
+    <div id="header">
+        <h1>BlockSnakes Game</h1>
+        <p id="walletAddress"></p>
+    </div>
+    <div id="content">
         <button id="connectWallet">Connect Wallet</button>
-        <button id="claimBonus" disabled>Claim Welcome Bonus</button>
-        <button id="convertPoints" disabled>Convert Points to Tokens</button>
-        <button id="stakeTokens" disabled>Stake Tokens</button>
-        <button id="unstakeTokens" disabled>Unstake Tokens</button>
-        <button id="playAgain" style="display: none;">Play Again</button>
-        <div id="historySection">
-            <h3>Transaction History</h3>
-            <ul id="historyList"></ul>
+        <button id="disconnectWallet" style="display: none;">Disconnect Wallet</button>
+        <button id="playGame">Play Game</button>
+        <canvas id="gameCanvas"></canvas>
+        <div id="gameInfo">
+            <h2>Game Info</h2>
+            <p id="boxesEaten">Boxes Eaten: 0</p>
+            <p id="pendingPoints">Pending Points: 0 BST Points</p>
+        </div>
+        <div id="taskSection">
+            <h2>Tasks</h2>
+            <button id="claimWelcomeBonus">Claim Welcome Bonus</button>
+            <button id="claimDailyLoginReward">Claim Daily Login Reward</button>
+            <button id="claimSocialMediaShareReward">Claim Social Media Share Reward</button>
+            <button id="getReferralLink">Get Referral Link</button>
+            <h3>Convert Points to Tokens</h3>
+            <input type="number" id="convertPointsAmount" placeholder="Points to Convert">
+            <button id="convertPoints">Convert Points</button>
+        </div>
+        <div id="stakingSection">
+            <h2>Staking</h2>
+            <input type="number" id="stakeAmount" placeholder="Amount to Stake">
+            <select id="lockPeriod">
+                <option value="0">Flexible (2% APR)</option>
+                <option value="1">60 Days (4% APR)</option>
+                <option value="2">180 Days (6% APR)</option>
+                <option value="3">365 Days (10% APR)</option>
+            </select>
+            <button id="stakeTokens">Stake Tokens</button>
+            <input type="number" id="unstakeAmount" placeholder="Amount to Unstake">
+            <select id="unlockPeriod">
+                <option value="0">Flexible</option>
+                <option value="1">60 Days</option>
+                <option value="2">180 Days</option>
+                <option value="3">365 Days</option>
+            </select>
+            <button id="unstakeTokens">Unstake Tokens</button>
+        </div>
+        <div id="playerHistory">
+            <h2>Player History</h2>
+            <p id="gamesPlayed">Games Played: 0</p>
+            <p id="totalPoints">Total Points: 0 BST Points</p>
+            <p id="totalGameRewards">Total Token Rewards: 0 BST Tokens</p>
+            <p id="totalReferrals">Total Referrals: 0</p>
+            <p id="referralPoints">Referral Points: 0 BST Points</p>
+            <p id="pendingPointsText">Pending Points: 0 BST Points</p>
+            <p id="flexibleStakeBalance">Flexible Stake Balance: 0 BST Tokens</p>
+            <p id="lockedStakeBalance60D">Locked Stake Balance (60D): 0 BST Tokens</p>
+            <p id="lockedStakeBalance180D">Locked Stake Balance (180D): 0 BST Tokens</p>
+            <p id="lockedStakeBalance365D">Locked Stake Balance (365D): 0 BST Tokens</p>
+            <p id="walletBalance">Wallet Balance: 0 BST Tokens</p>
+            <h3>Reward History</h3>
+            <ul id="rewardHistoryList"></ul>
+            <h3>Task History</h3>
+            <ul id="taskHistoryList"></ul>
+            <h3>Staking History</h3>
+            <ul id="stakingHistoryList"></ul>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="game.js"></script>
+    <div id="loadingIndicator">Loading...</div>
+    <div id="gameOverPopup">
+        <h2>Game Over!</h2>
+        <p id="finalBoxesEaten"></p>
+        <p id="finalPoints"></p>
+        <button id="closePopup">Close</button>
+    </div>
+    <audio id="eatingSound" src="https://raw.githubusercontent.com/eienzen/blocksnakes/main/eating.mp3"></audio>
+    <audio id="gameOverSound" src="https://raw.githubusercontent.com/eienzen/blocksnakes/main/gameover.mp3"></audio>
+    <audio id="victorySound" src="https://raw.githubusercontent.com/eienzen/blocksnakes/main/victory.mp3"></audio>
 </body>
 </html>
