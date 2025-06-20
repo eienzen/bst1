@@ -3,193 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlockSnakes Game</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+    <title>Block Snakes Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
-        canvas {
-            border: 2px solid #000;
-            display: block;
-            margin: 0 auto;
-        }
-        .controls {
-            text-align: center;
-            margin-top: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            font-size: 16px;
-        }
-        @media (max-width: 600px) {
-            canvas {
-                width: 90vw !important;
-                height: auto !important;
-            }
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background-color: #f0f0f0; }
+        #gameCanvas { border: 1px solid #000; }
+        .stats { margin: 10px 0; }
+        .button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        #gameOverPopup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid #000; z-index: 1000; }
+        #loadingIndicator { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.5); color: white; padding: 20px; z-index: 1001; }
+        .section { margin: 20px 0; }
+        input, select { padding: 5px; margin: 5px; }
     </style>
+    <audio id="eatingSound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
+    <audio id="gameOverSound" src="https://www.soundjay.com/buttons/beep-02.mp3"></audio>
+    <audio id="victorySound" src="https://www.soundjay.com/buttons/beep-03.mp3"></audio>
 </head>
 <body>
-    <div id="gameCanvas"></div>
-    <div class="controls">
-        <button onclick="startGame()">Start Game</button>
-        <button onclick="claimWelcomeBonus()">Claim Welcome Bonus</button>
-        <button onclick="convertPoints()">Convert Points</button>
-        <button onclick="stakeTokens()">Stake Tokens</button>
-        <button onclick="unstakeTokens()">Unstake Tokens</button>
-        <button onclick="mintTokens()">Mint Tokens (Owner)</button>
-        <button onclick="burnTokens()">Burn Tokens (Owner)</button>
-        <button onclick="updateGameOracle()">Update Game Oracle (Owner)</button>
+    <h1>Block Snakes Game</h1>
+    <div id="walletAddress">Wallet: Not Connected</div>
+    <button id="connectWallet" class="button">Connect Wallet</button>
+    <button id="disconnectWallet" class="button" style="display: none;">Disconnect Wallet</button>
+    <button id="playGame" class="button">Play Game</button>
+    <button id="enterFullscreen" class="button">Enter Fullscreen</button>
+    <div class="stats">
+        <div id="boxesEaten">Boxes Eaten: 0</div>
+        <div id="pendingPoints">Pending Points: 0 BST Points</div>
+        <div id="gamesPlayed">Games Played: 0</div>
+        <div id="totalPoints">Total Points: 0 BST Points</div>
+        <div id="totalRewards">Total Rewards: 0 BST Tokens</div>
+        <div id="totalReferrals">Total Referrals: 0</div>
+        <div id="referralPoints">Referral Points: 0 BST Points</div>
+        <div id="walletBalance">Wallet Balance: 0 BST Tokens</div>
+        <div id="flexibleStakeBalance">Flexible Stake Balance: 0 BST Tokens</div>
+        <div id="lockedStakeBalance">Locked Stake Balances: 60 Days: 0, 180 Days: 0, 365 Days: 0</div>
     </div>
-
-    <script>
-        let snake, food, score, gameState;
-        const gridSize = 20;
-        const canvasSize = 400;
-        const contractAddress = "0x4fe4bF5670405772941d0D1e5706863A13f17B28";
-        const abi = [/* Your ABI here */];
-        let web3, contract, accounts;
-
-        // Initialize Web3 and Contract
-        async function initWeb3() {
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-                await window.ethereum.request({ method: "eth_requestAccounts" });
-                accounts = await web3.eth.getAccounts();
-                contract = new web3.eth.Contract(abi, contractAddress);
-            } else {
-                alert("Please install MetaMask!");
-            }
-        }
-
-        // p5.js Setup
-        function setup() {
-            let canvas = createCanvas(canvasSize, canvasSize);
-            canvas.parent("gameCanvas");
-            frameRate(10);
-            resetGame();
-        }
-
-        function draw() {
-            background(220);
-            if (gameState === "playing") {
-                updateGame();
-                drawGame();
-            }
-        }
-
-        function resetGame() {
-            snake = [{ x: 10, y: 10 }];
-            food = { x: floor(random(0, canvasSize / gridSize)), y: floor(random(0, canvasSize / gridSize)) };
-            score = 0;
-            gameState = "playing";
-        }
-
-        function updateGame() {
-            const head = { x: snake[0].x, y: snake[0].y };
-            if (keyIsDown(LEFT_ARROW)) head.x -= 1;
-            if (keyIsDown(RIGHT_ARROW)) head.x += 1;
-            if (keyIsDown(UP_ARROW)) head.y -= 1;
-            if (keyIsDown(DOWN_ARROW)) head.y += 1;
-
-            head.x = (head.x + canvasSize / gridSize) % (canvasSize / gridSize);
-            head.y = (head.y + canvasSize / gridSize) % (canvasSize / gridSize);
-
-            if (head.x === food.x && head.y === food.y) {
-                score += 10;
-                food = { x: floor(random(0, canvasSize / gridSize)), y: floor(random(0, canvasSize / gridSize)) };
-            } else {
-                snake.pop();
-            }
-            snake.unshift(head);
-
-            if (snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)) {
-                gameState = "over";
-            }
-        }
-
-        function drawGame() {
-            // Draw Snake with Eyes and Body
-            fill(0, 255, 0); // Green body
-            for (let i = 0; i < snake.length; i++) {
-                rect(snake[i].x * gridSize, snake[i].y * gridSize, gridSize - 2, gridSize - 2, 5);
-                if (i === 0) {
-                    // Draw Eyes
-                    fill(255); // White eyes
-                    ellipse(snake[i].x * gridSize + 4, snake[i].y * gridSize + 4, 4, 4);
-                    ellipse(snake[i].x * gridSize + 12, snake[i].y * gridSize + 4, 4, 4);
-                    fill(0); // Black pupils
-                    ellipse(snake[i].x * gridSize + 4, snake[i].y * gridSize + 4, 2, 2);
-                    ellipse(snake[i].x * gridSize + 12, snake[i].y * gridSize + 4, 2, 2);
-                }
-            }
-
-            // Draw Food
-            fill(255, 0, 0); // Red food
-            rect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2, 5);
-
-            // Draw Score
-            fill(0);
-            textSize(16);
-            text(`Score: ${score}`, 10, 20);
-        }
-
-        // Game Controls
-        function startGame() {
-            resetGame();
-        }
-
-        async function claimWelcomeBonus() {
-            await contract.methods.claimWelcomeBonus().send({ from: accounts[0] });
-            alert("Welcome bonus claimed!");
-        }
-
-        async function convertPoints() {
-            const points = parseInt(prompt("Enter points to convert:"));
-            const referrer = prompt("Enter referrer address (optional):") || "0x0000000000000000000000000000000000000000";
-            await contract.methods.convertPointsToTokens(points, accounts[0], referrer).send({ from: accounts[0], value: web3.utils.toWei("0.0002", "ether") });
-            alert("Points converted to tokens!");
-        }
-
-        async function stakeTokens() {
-            const amount = parseInt(prompt("Enter amount to stake:"));
-            const lockPeriod = parseInt(prompt("Enter lock period (0: Flexible, 1: 60 Days, 2: 180 Days, 3: 365 Days):"));
-            await contract.methods.stakeTokens(amount, lockPeriod).send({ from: accounts[0] });
-            alert("Tokens staked!");
-        }
-
-        async function unstakeTokens() {
-            const amount = parseInt(prompt("Enter amount to unstake:"));
-            const lockPeriod = parseInt(prompt("Enter lock period (0: Flexible, 1: 60 Days, 2: 180 Days, 3: 365 Days):"));
-            await contract.methods.unstakeTokens(amount, lockPeriod).send({ from: accounts[0] });
-            alert("Tokens unstaked!");
-        }
-
-        async function mintTokens() {
-            const amount = parseInt(prompt("Enter amount to mint:"));
-            const key = prompt("Enter secret key:");
-            await contract.methods.mintTokens(amount, key).send({ from: accounts[0] });
-            alert("Tokens minted!");
-        }
-
-        async function burnTokens() {
-            const amount = parseInt(prompt("Enter amount to burn:"));
-            const key = prompt("Enter secret key:");
-            await contract.methods.burnTokens(amount, key).send({ from: accounts[0] });
-            alert("Tokens burned!");
-        }
-
-        async function updateGameOracle() {
-            const newOracle = prompt("Enter new oracle address:");
-            const key = prompt("Enter secret key:");
-            await contract.methods.updateGameOracle(newOracle, key).send({ from: accounts[0] });
-            alert("Game oracle updated!");
-        }
-
-        // Initialize on load
-        window.onload = async () => {
-            await initWeb3();
-        };
-    </script>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOverPopup">
+        <h2>Game Over</h2>
+        <div id="finalBoxesEaten"></div>
+        <div id="finalPoints"></div>
+        <button id="closePopup" class="button">Close</button>
+    </div>
+    <div id="loadingIndicator">Loading...</div>
+    <div class="section">
+        <h3>Tasks & Rewards</h3>
+        <button id="claimWelcomeBonus" class="button">Claim Welcome Bonus</button>
+        <button id="claimDailyLoginReward" class="button">Claim Daily Login Reward</button>
+        <button id="claimSocialMediaShareReward" class="button">Claim Social Media Share Reward</button>
+        <ul id="taskHistory"></ul>
+        <ul id="rewardHistory"></ul>
+        <ul id="stakingHistory"></ul>
+    </div>
+    <div class="section">
+        <h3>Convert Points to Tokens</h3>
+        <input type="number" id="convertPointsAmount" placeholder="Enter points to convert">
+        <input type="text" id="referrerAddress" placeholder="Enter referrer address (optional)">
+        <button id="convertPointsToTokens" class="button">Convert Points</button>
+    </div>
+    <div class="section">
+        <h3>Stake Tokens</h3>
+        <input type="number" id="stakeAmount" placeholder="Enter amount to stake">
+        <select id="lockPeriod">
+            <option value="0">Flexible</option>
+            <option value="1">60 Days</option>
+            <option value="2">180 Days</option>
+            <option value="3">365 Days</option>
+        </select>
+        <button id="stakeTokens" class="button">Stake Tokens</button>
+    </div>
+    <div class="section">
+        <h3>Unstake Tokens</h3>
+        <input type="number" id="unstakeAmount" placeholder="Enter amount to unstake">
+        <select id="unlockPeriod">
+            <option value="0">Flexible</option>
+            <option value="1">60 Days</option>
+            <option value="2">180 Days</option>
+            <option value="3">365 Days</option>
+        </select>
+        <button id="unstakeTokens" class="button">Unstake Tokens</button>
+    </div>
+    <div class="section">
+        <h3>Withdraw Pending Rewards</h3>
+        <input type="number" id="withdrawRewardAmount" placeholder="Enter amount to withdraw">
+        <button id="withdrawPendingRewards" class="button">Withdraw Rewards</button>
+    </div>
+    <div class="section">
+        <h3>Owner Functions</h3>
+        <div><input type="number" id="mintAmount" placeholder="Enter amount to mint"><input type="text" id="mintKey" placeholder="Secret Key"><button id="mintTokens" class="button">Mint Tokens</button></div>
+        <div><input type="number" id="burnAmount" placeholder="Enter amount to burn"><input type="text" id="burnKey" placeholder="Secret Key"><button id="burnTokens" class="button">Burn Tokens</button></div>
+        <div><input type="number" id="newWelcomeBonus" placeholder="New Welcome Bonus"><input type="text" id="welcomeBonusKey" placeholder="Secret Key"><button id="updateWelcomeBonus" class="button">Update Welcome Bonus</button></div>
+        <div><input type="number" id="newReferralRate" placeholder="New Referral Rate"><input type="text" id="referralRateKey" placeholder="Secret Key"><button id="updateReferralCommissionRate" class="button">Update Referral Rate</button></div>
+        <div><input type="number" id="newWithdrawalFee" placeholder="New Withdrawal Fee (BNB Wei)"><input type="text" id="withdrawalFeeKey" placeholder="Secret Key"><button id="updateWithdrawalFee" class="button">Update Withdrawal Fee</button></div>
+        <div><input type="number" id="newMaxConversionLimit" placeholder="New Max Conversion Limit"><input type="text" id="maxConversionLimitKey" placeholder="Secret Key"><button id="updateMaxConversionLimit" class="button">Update Max Conversion Limit</button></div>
+        <div><input type="number" id="newConversionRatio" placeholder="New Conversion Ratio"><input type="text" id="conversionRatioKey" placeholder="Secret Key"><button id="updateConversionRatio" class="button">Update Conversion Ratio</button></div>
+        <div><select id="lockRewardPeriod"><option value="1">60 Days</option><option value="2">180 Days</option><option value="3">365 Days</option></select><input type="number" id="newLockRewardRate" placeholder="New Lock Reward Rate"><input type="text" id="lockRewardKey" placeholder="Secret Key"><button id="updateLockReward" class="button">Update Lock Reward</button></div>
+        <div><input type="text" id="newGameOracle" placeholder="New Game Oracle Address"><input type="text" id="gameOracleKey" placeholder="Secret Key"><button id="updateGameOracle" class="button">Update Game Oracle</button></div>
+        <div><input type="text" id="newOwnerWallet" placeholder="New Owner Wallet Address"><input type="text" id="ownerWalletKey" placeholder="Secret Key"><button id="updateOwnerWallet" class="button">Update Owner Wallet</button></div>
+        <div><input type="text" id="newSecretKey" placeholder="New Secret Key"><input type="text" id="currentSecretKey" placeholder="Current Secret Key"><button id="updateSecretKey" class="button">Update Secret Key</button></div>
+    </div>
+    <script src="game.js"></script>
 </body>
 </html>
