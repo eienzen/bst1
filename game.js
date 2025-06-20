@@ -1377,7 +1377,307 @@ let provider, signer, contract, account, canvasSize, p5Instance;
 window.onload = function() {
     init();
     setup();
-    document.getElementById("playGame").addEventListener("click", resetGame);
+    const elements = {
+        connectWallet: document.getElementById("connectWallet"),
+        disconnectWallet: document.getElementById("disconnectWallet"),
+        playGame: document.getElementById("playGame"),
+        claimWelcomeBonus: document.getElementById("claimWelcomeBonus"),
+        convertPoints: document.getElementById("convertPoints"),
+        stakeTokens: document.getElementById("stakeTokens"),
+        unstakeTokens: document.getElementById("unstakeTokens"),
+        getReferralLink: document.getElementById("getReferralLink"),
+        mintTokens: document.getElementById("mintTokens"),
+        burnTokens: document.getElementById("burnTokens"),
+        updateWelcomeBonus: document.getElementById("updateWelcomeBonus"),
+        updateReferralCommissionRate: document.getElementById("updateReferralCommissionRate"),
+        updateWithdrawalFee: document.getElementById("updateWithdrawalFee"),
+        updateMaxConversionLimit: document.getElementById("updateMaxConversionLimit"),
+        updateConversionRatio: document.getElementById("updateConversionRatio"),
+        updateLockReward: document.getElementById("updateLockReward"),
+        updateGameOracle: document.getElementById("updateGameOracle"),
+        updateOwnerWallet: document.getElementById("updateOwnerWallet"),
+        updateSecretKey: document.getElementById("updateSecretKey"),
+        transferOwnership: document.getElementById("transferOwnership"),
+        playAgain: document.getElementById("playAgain"),
+        closePopup: document.getElementById("closePopup")
+    };
+
+    elements.connectWallet.addEventListener("click", init);
+    elements.disconnectWallet.addEventListener("click", disconnect);
+    elements.playGame.addEventListener("click", resetGame);
+    elements.claimWelcomeBonus.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const tx = await contract.claimWelcomeBonus({ gasLimit: 300000 });
+            await tx.wait();
+            alert("Welcome bonus claimed!");
+            await updatePlayerInfo();
+        } catch (error) {
+            alert("Error claiming bonus: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.convertPoints.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const amount = parseInt(document.getElementById("convertPointsAmount").value);
+            if (!amount || amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+            const maxLimit = await contract.maxConversionLimit();
+            if (amount > maxLimit.toNumber()) {
+                alert(`Maximum conversion limit is ${maxLimit.toNumber()} points per transaction.`);
+                return;
+            }
+            const internalBalance = await contract.getInternalBalance(account);
+            if (amount > internalBalance.toNumber()) {
+                alert(`You only have ${internalBalance.toNumber()} points available.`);
+                return;
+            }
+            const referrer = prompt("Enter referrer address (optional):") || "0x0000000000000000000000000000000000000000";
+            const tx = await contract.convertPointsToTokens(amount, account, referrer, { value: ethers.utils.parseEther("0.0002"), gasLimit: 300000 });
+            await tx.wait();
+            alert(`${amount} points converted to tokens!`);
+            await updatePlayerInfo();
+        } catch (error) {
+            alert("Error converting points: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.stakeTokens.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const amount = parseInt(document.getElementById("stakeAmount").value);
+            const lockPeriod = parseInt(document.getElementById("lockPeriod").value);
+            if (!amount || amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+            const balance = await contract.balanceOf(account);
+            if (amount > balance.toNumber()) {
+                alert(`You only have ${ethers.utils.formatEther(balance)} BST tokens.`);
+                return;
+            }
+            const tx = await contract.stakeTokens(amount, lockPeriod, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Tokens staked successfully!");
+            await updatePlayerInfo();
+        } catch (error) {
+            alert("Error staking tokens: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.unstakeTokens.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const amount = parseInt(document.getElementById("unstakeAmount").value);
+            const lockPeriod = parseInt(document.getElementById("unlockPeriod").value);
+            if (!amount || amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+            const balance = await contract.getLockedStakeBalance(account, lockPeriod);
+            if (amount > balance.toNumber()) {
+                alert(`You only have ${ethers.utils.formatEther(balance)} BST tokens locked for this period.`);
+                return;
+            }
+            const tx = await contract.unstakeTokens(amount, lockPeriod, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Tokens unstaked successfully!");
+            await updatePlayerInfo();
+        } catch (error) {
+            alert("Error unstaking tokens: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.getReferralLink.addEventListener("click", () => {
+        const referralLink = `${window.location.origin}?ref=${account}`;
+        alert(`Your referral link: ${referralLink}`);
+        navigator.clipboard.writeText(referralLink);
+    });
+    elements.mintTokens.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const amount = parseInt(prompt("Enter amount to mint:"));
+            const key = prompt("Enter secret key:");
+            const tx = await contract.mintTokens(amount, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Tokens minted successfully!");
+            await updatePlayerInfo();
+        } catch (error) {
+            alert("Error minting tokens: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.burnTokens.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const amount = parseInt(prompt("Enter amount to burn:"));
+            const key = prompt("Enter secret key:");
+            const tx = await contract.burnTokens(amount, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Tokens burned successfully!");
+            await updatePlayerInfo();
+        } catch (error) {
+            alert("Error burning tokens: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.updateWelcomeBonus.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const amount = parseInt(document.getElementById("updateWelcomeBonusAmount").value);
+            const key = prompt("Enter secret key:");
+            const tx = await contract.updateWelcomeBonus(amount, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Welcome bonus updated!");
+            await updatePlayerInfo();
+        } catch (error) {
+            alert("Error updating welcome bonus: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.updateReferralCommissionRate.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const rate = parseInt(document.getElementById("updateReferralCommissionRate").value);
+            const key = prompt("Enter secret key:");
+            const tx = await contract.updateReferralCommissionRate(rate, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Referral commission rate updated!");
+        } catch (error) {
+            alert("Error updating referral commission rate: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.updateWithdrawalFee.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const fee = parseInt(document.getElementById("updateWithdrawalFee").value);
+            const key = prompt("Enter secret key:");
+            const tx = await contract.updateWithdrawalFee(fee, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Withdrawal fee updated!");
+        } catch (error) {
+            alert("Error updating withdrawal fee: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.updateMaxConversionLimit.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const limit = parseInt(document.getElementById("updateMaxConversionLimit").value);
+            const key = prompt("Enter secret key:");
+            const tx = await contract.updateMaxConversionLimit(limit, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Max conversion limit updated!");
+        } catch (error) {
+            alert("Error updating max conversion limit: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.updateConversionRatio.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const ratio = parseInt(document.getElementById("updateConversionRatio").value);
+            const key = prompt("Enter secret key:");
+            const tx = await contract.updateConversionRatio(ratio, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Conversion ratio updated!");
+        } catch (error) {
+            alert("Error updating conversion ratio: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.updateLockReward.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const rate = parseInt(document.getElementById("updateLockReward").value);
+            const period = parseInt(document.getElementById("lockRewardPeriod").value);
+            const key = prompt("Enter secret key:");
+            const tx = await contract.updateLockReward(period, rate, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Lock reward updated!");
+        } catch (error) {
+            alert("Error updating lock reward: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.updateGameOracle.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const oracle = document.getElementById("updateGameOracle").value;
+            const key = prompt("Enter secret key:");
+            const tx = await contract.updateGameOracle(oracle, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Game oracle updated!");
+        } catch (error) {
+            alert("Error updating game oracle: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.updateOwnerWallet.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const wallet = document.getElementById("updateOwnerWallet").value;
+            const key = prompt("Enter secret key:");
+            const tx = await contract.updateOwnerWallet(wallet, key, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Owner wallet updated!");
+        } catch (error) {
+            alert("Error updating owner wallet: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.updateSecretKey.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const newKey = document.getElementById("updateSecretKey").value;
+            const currentKey = prompt("Enter current secret key:");
+            const tx = await contract.updateSecretKey(newKey, currentKey, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Secret key updated!");
+        } catch (error) {
+            alert("Error updating secret key: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.transferOwnership.addEventListener("click", async () => {
+        showLoading();
+        try {
+            const newOwner = document.getElementById("newOwner").value;
+            const tx = await contract.transferOwnership(newOwner, { gasLimit: 300000 });
+            await tx.wait();
+            alert("Ownership transferred!");
+        } catch (error) {
+            alert("Error transferring ownership: " + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    elements.playAgain.addEventListener("click", () => {
+        document.getElementById("gameOverPopup").style.display = "none";
+        resetGame();
+    });
+    elements.closePopup.addEventListener("click", () => {
+        document.getElementById("gameOverPopup").style.display = "none";
+    });
 };
 
 async function init() {
@@ -1523,15 +1823,6 @@ function showGameOver() {
     document.getElementById("finalPoints").textContent = `Final Points: ${score} BST Points`;
 }
 
-document.getElementById("playAgain").addEventListener("click", () => {
-    document.getElementById("gameOverPopup").style.display = "none";
-    resetGame();
-});
-
-document.getElementById("closePopup").addEventListener("click", () => {
-    document.getElementById("gameOverPopup").style.display = "none";
-});
-
 function handleTouch(p) {
     if (gameState !== "playing" || !p5Instance) return;
     const touch = p.touches[0];
@@ -1575,293 +1866,6 @@ async function updatePlayerInfo() {
         hideLoading();
     }
 }
-
-document.getElementById("connectWallet").addEventListener("click", init);
-
-document.getElementById("disconnectWallet").addEventListener("click", disconnect);
-
-document.getElementById("claimWelcomeBonus").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const tx = await contract.claimWelcomeBonus({ gasLimit: 300000 });
-        await tx.wait();
-        alert("Welcome bonus claimed!");
-        await updatePlayerInfo();
-    } catch (error) {
-        alert("Error claiming bonus: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("convertPoints").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const amount = parseInt(document.getElementById("convertPointsAmount").value);
-        if (!amount || amount <= 0) {
-            alert("Please enter a valid amount.");
-            return;
-        }
-        const maxLimit = await contract.maxConversionLimit();
-        if (amount > maxLimit.toNumber()) {
-            alert(`Maximum conversion limit is ${maxLimit.toNumber()} points per transaction.`);
-            return;
-        }
-        const internalBalance = await contract.getInternalBalance(account);
-        if (amount > internalBalance.toNumber()) {
-            alert(`You only have ${internalBalance.toNumber()} points available.`);
-            return;
-        }
-        const referrer = prompt("Enter referrer address (optional):") || "0x0000000000000000000000000000000000000000";
-        const tx = await contract.convertPointsToTokens(amount, account, referrer, { value: ethers.utils.parseEther("0.0002"), gasLimit: 300000 });
-        await tx.wait();
-        alert(`${amount} points converted to tokens!`);
-        await updatePlayerInfo();
-    } catch (error) {
-        alert("Error converting points: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("stakeTokens").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const amount = parseInt(document.getElementById("stakeAmount").value);
-        const lockPeriod = parseInt(document.getElementById("lockPeriod").value);
-        if (!amount || amount <= 0) {
-            alert("Please enter a valid amount.");
-            return;
-        }
-        const balance = await contract.balanceOf(account);
-        if (amount > balance.toNumber()) {
-            alert(`You only have ${ethers.utils.formatEther(balance)} BST tokens.`);
-            return;
-        }
-        const tx = await contract.stakeTokens(amount, lockPeriod, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Tokens staked successfully!");
-        await updatePlayerInfo();
-    } catch (error) {
-        alert("Error staking tokens: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("unstakeTokens").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const amount = parseInt(document.getElementById("unstakeAmount").value);
-        const lockPeriod = parseInt(document.getElementById("unlockPeriod").value);
-        if (!amount || amount <= 0) {
-            alert("Please enter a valid amount.");
-            return;
-        }
-        const balance = await contract.getLockedStakeBalance(account, lockPeriod);
-        if (amount > balance.toNumber()) {
-            alert(`You only have ${ethers.utils.formatEther(balance)} BST tokens locked for this period.`);
-            return;
-        }
-        const tx = await contract.unstakeTokens(amount, lockPeriod, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Tokens unstaked successfully!");
-        await updatePlayerInfo();
-    } catch (error) {
-        alert("Error unstaking tokens: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("getReferralLink").addEventListener("click", () => {
-    const referralLink = `${window.location.origin}?ref=${account}`;
-    alert(`Your referral link: ${referralLink}`);
-    navigator.clipboard.writeText(referralLink);
-});
-
-document.getElementById("mintTokens").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const amount = parseInt(prompt("Enter amount to mint:"));
-        const key = prompt("Enter secret key:");
-        const tx = await contract.mintTokens(amount, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Tokens minted successfully!");
-        await updatePlayerInfo();
-    } catch (error) {
-        alert("Error minting tokens: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("burnTokens").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const amount = parseInt(prompt("Enter amount to burn:"));
-        const key = prompt("Enter secret key:");
-        const tx = await contract.burnTokens(amount, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Tokens burned successfully!");
-        await updatePlayerInfo();
-    } catch (error) {
-        alert("Error burning tokens: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("updateWelcomeBonus").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const amount = parseInt(document.getElementById("updateWelcomeBonusAmount").value);
-        const key = prompt("Enter secret key:");
-        const tx = await contract.updateWelcomeBonus(amount, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Welcome bonus updated!");
-        await updatePlayerInfo();
-    } catch (error) {
-        alert("Error updating welcome bonus: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("updateReferralCommissionRate").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const rate = parseInt(document.getElementById("updateReferralCommissionRate").value);
-        const key = prompt("Enter secret key:");
-        const tx = await contract.updateReferralCommissionRate(rate, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Referral commission rate updated!");
-    } catch (error) {
-        alert("Error updating referral commission rate: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("updateWithdrawalFee").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const fee = parseInt(document.getElementById("updateWithdrawalFee").value);
-        const key = prompt("Enter secret key:");
-        const tx = await contract.updateWithdrawalFee(fee, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Withdrawal fee updated!");
-    } catch (error) {
-        alert("Error updating withdrawal fee: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("updateMaxConversionLimit").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const limit = parseInt(document.getElementById("updateMaxConversionLimit").value);
-        const key = prompt("Enter secret key:");
-        const tx = await contract.updateMaxConversionLimit(limit, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Max conversion limit updated!");
-    } catch (error) {
-        alert("Error updating max conversion limit: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("updateConversionRatio").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const ratio = parseInt(document.getElementById("updateConversionRatio").value);
-        const key = prompt("Enter secret key:");
-        const tx = await contract.updateConversionRatio(ratio, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Conversion ratio updated!");
-    } catch (error) {
-        alert("Error updating conversion ratio: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("updateLockReward").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const rate = parseInt(document.getElementById("updateLockReward").value);
-        const period = parseInt(document.getElementById("lockRewardPeriod").value);
-        const key = prompt("Enter secret key:");
-        const tx = await contract.updateLockReward(period, rate, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Lock reward updated!");
-    } catch (error) {
-        alert("Error updating lock reward: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("updateGameOracle").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const oracle = document.getElementById("updateGameOracle").value;
-        const key = prompt("Enter secret key:");
-        const tx = await contract.updateGameOracle(oracle, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Game oracle updated!");
-    } catch (error) {
-        alert("Error updating game oracle: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("updateOwnerWallet").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const wallet = document.getElementById("updateOwnerWallet").value;
-        const key = prompt("Enter secret key:");
-        const tx = await contract.updateOwnerWallet(wallet, key, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Owner wallet updated!");
-    } catch (error) {
-        alert("Error updating owner wallet: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("updateSecretKey").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const newKey = document.getElementById("updateSecretKey").value;
-        const currentKey = prompt("Enter current secret key:");
-        const tx = await contract.updateSecretKey(newKey, currentKey, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Secret key updated!");
-    } catch (error) {
-        alert("Error updating secret key: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-document.getElementById("transferOwnership").addEventListener("click", async () => {
-    showLoading();
-    try {
-        const newOwner = document.getElementById("newOwner").value;
-        const tx = await contract.transferOwnership(newOwner, { gasLimit: 300000 });
-        await tx.wait();
-        alert("Ownership transferred!");
-    } catch (error) {
-        alert("Error transferring ownership: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
 
 function showLoading() {
     document.getElementById("loadingIndicator").style.display = "block";
