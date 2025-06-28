@@ -2,218 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://raw.githubusercontent.com; connect-src 'self' https://data-seed-prebsc-1-s1.bnbchain.org:8545/ wss://data-seed-prebsc-1-s1.bnbchain.org:8545/ https://data-seed-prebsc-2-s1.bnbchain.org:8545/ wss://data-seed-prebsc-2-s1.bnbchain.org:8545/ https://*.bnbchain.org wss://*.bnbchain.org; media-src 'self' https://github.com https://raw.githubusercontent.com;">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>BlockSnakes Game</title>
-    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/eienzen/blocksnakes/main/favicon.ico">
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="https://unpkg.com/p5@1.4.2/lib/p5.js"></script>
-    <script src="game.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #0a0a23, #1a1a3d);
-            color: #fff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
-        #header {
-            width: 100%;
-            background: linear-gradient(90deg, #2a2a5d, #00ffcc);
-            padding: 20px;
-            text-align: center;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        #header h1 {
-            margin: 0;
-            font-size: 36px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        #header p {
-            margin: 5px;
-            font-size: 18px;
-        }
-        #content {
-            margin-top: 20px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        canvas {
-            border: 2px solid #00ffcc;
-            background: linear-gradient(45deg, #0a0a23, #1a1a3d);
-            border-radius: 5px;
-            margin: 20px 0;
-            max-width: 90vw;
-            max-height: 70vh;
-        }
-        #gameInfo, #playerHistory, #stakingSection, #taskSection {
-            margin-top: 20px;
-            padding: 15px;
-            background: linear-gradient(135deg, #2a2a5d, #3a3a7d);
-            border-radius: 10px;
-            width: 80%;
-            max-width: 600px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        #loadingIndicator {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            display: none;
-            z-index: 2000;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            background-color: #00ffcc;
-            color: #000;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #00ccaa;
-        }
-        button:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-        }
-        input, select {
-            padding: 8px;
-            margin: 5px;
-            border-radius: 5px;
-            border: 1px solid #00ffcc;
-            background-color: #1a1a3d;
-            color: #fff;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin: 5px 0;
-            background-color: #3a3a7d;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        h2, h3 {
-            color: #00ffcc;
-        }
-        #gameOverPopup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #2a2a5d, #3a3a7d);
-            padding: 20px;
-            border: 2px solid #00ffcc;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            color: #fff;
-            text-align: center;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://cdn.jsdelivr.net 'unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://data-seed-prebsc-1-s1.binance.org:8545 wss://relay.walletconnect.com;">
+    <title>Atheist World AWT</title>
+    <link rel="stylesheet" href="./output.css">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@2.11.0/dist/umd/index.min.js"></script>
 </head>
-<body>
-    <div id="header">
-        <h1>BlockSnakes Game</h1>
-        <p id="walletAddress"></p>
-    </div>
-    <div id="content">
-        <button id="connectWallet">Connect Wallet</button>
-        <button id="disconnectWallet" style="display: none;">Disconnect Wallet</button>
-        <button id="playGame">Play Game</button>
-        <canvas id="gameCanvas"></canvas>
-        <div id="gameInfo">
-            <h2>Game Info</h2>
-            <p id="boxesEaten">Boxes Eaten: 0</p>
-            <p id="pendingPoints">Pending Points: 0 BST Points</p>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-4">Atheist World AWT</h1>
+        <div id="status" class="text-center mb-4 text-red-500 hidden"></div>
+        <div id="connectWallet" class="text-center mb-4">
+            <button id="connectWalletBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Connect Wallet</button>
         </div>
-        <div id="taskSection">
-            <h2>Tasks</h2>
-            <button id="claimWelcomeBonus">Claim Welcome Bonus</button>
-            <button id="claimDailyLoginReward">Claim Daily Login Reward</button>
-            <button id="claimSocialMediaShareReward">Claim Social Media Share Reward</button>
-            <button id="getReferralLink">Get Referral Link</button>
-            <h3>Convert Points to Tokens</h3>
-            <input type="number" id="convertPointsAmount" placeholder="Points to Convert">
-            <button id="convertPoints">Convert Points</button>
-        </div>
-        <div id="stakingSection">
-            <h2>Staking</h2>
-            <input type="number" id="stakeAmount" placeholder="Amount to Stake">
-            <select id="lockPeriod">
-                <option value="0">Flexible (2% APR)</option>
-                <option value="1">60 Days (4% APR)</option>
-                <option value="2">180 Days (6% APR)</option>
-                <option value="3">365 Days (10% APR)</option>
-            </select>
-            <button id="stakeTokens">Stake Tokens</button>
-            <input type="number" id="unstakeAmount" placeholder="Amount to Unstake">
-            <select id="unlockPeriod">
-                <option value="0">Flexible</option>
-                <option value="1">60 Days</option>
-                <option value="2">180 Days</option>
-                <option value="3">365 Days</option>
-            </select>
-            <button id="unstakeTokens">Unstake Tokens</button>
-        </div>
-        <div id="playerHistory">
-            <h2>Player History</h2>
-            <p id="gamesPlayed">Games Played: 0</p>
-            <p id="totalPoints">Total Points: 0 BST Points</p>
-            <p id="totalGameRewards">Total Token Rewards: 0 BST Tokens</p>
-            <p id="totalReferrals">Total Referrals: 0</p>
-            <p id="referralPoints">Referral Points: 0 BST Points</p>
-            <p id="pendingPointsText">Pending Points: 0 BST Points</p>
-            <p id="flexibleStakeBalance">Flexible Stake Balance: 0 BST Tokens</p>
-            <p id="lockedStakeBalance60D">Locked Stake Balance (60D): 0 BST Tokens</p>
-            <p id="lockedStakeBalance180D">Locked Stake Balance (180D): 0 BST Tokens</p>
-            <p id="lockedStakeBalance365D">Locked Stake Balance (365D): 0 BST Tokens</p>
-            <p id="walletBalance">Wallet Balance: 0 BST Tokens</p>
-            <h3>Reward History</h3>
-            <ul id="rewardHistoryList"></ul>
-            <h3>Task History</h3>
-            <ul id="taskHistoryList"></ul>
-            <h3>Staking History</h3>
-            <ul id="stakingHistoryList"></ul>
+        <div id="dashboard" class="hidden bg-white p-6 rounded shadow">
+            <h2 class="text-xl font-semibold mb-2">Dashboard</h2>
+            <p>Address: <span id="userAddress"></span></p>
+            <p>AWT Balance: <span id="awtBalance"></span></p>
+            <p>Referrals: <span id="referralCount"></span></p>
+            <p>Referral Link: <span id="referralLink"></span></p>
+            <div class="mt-4">
+                <button id="claimBonusBtn" class="bg-purple-500 text-white px-4 py-2 rounded">Claim Welcome Bonus (100 AWT)</button>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold">Refer and Stake</h3>
+                <input id="referrerAddress" type="text" placeholder="Referrer Address" class="border p-2 w-full mb-2">
+                <input id="referAmount" type="number" placeholder="AWT Amount (Min 100)" class="border p-2 w-full mb-2">
+                <button id="referBtn" class="bg-green-500 text-white px-4 py-2 rounded">Refer and Stake</button>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold">Transfer AWT</h3>
+                <input id="transferTo" type="text" placeholder="Recipient Address" class="border p-2 w-full mb-2">
+                <input id="transferAmount" type="number" placeholder="AWT Amount" class="border p-2 w-full mb-2">
+                <button id="transferBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Transfer</button>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold">Withdraw AWT</h3>
+                <input id="withdrawAmount" type="number" placeholder="AWT Amount" class="border p-2 w-full mb-2">
+                <button id="withdrawBtn" class="bg-red-500 text-white px-4 py-2 rounded">Withdraw</button>
+            </div>
         </div>
     </div>
-    <div id="loadingIndicator">Loading...</div>
-    <div id="gameOverPopup">
-        <h2>Game Over!</h2>
-        <p id="finalBoxesEaten"></p>
-        <p id="finalPoints"></p>
-        <button id="closePopup">Close</button>
-    </div>
-    <audio id="eatingSound" src="https://raw.githubusercontent.com/eienzen/blocksnakes/main/eating.mp3"></audio>
-    <audio id="gameOverSound" src="https://raw.githubusercontent.com/eienzen/blocksnakes/main/gameover.mp3"></audio>
-    <audio id="victorySound" src="https://raw.githubusercontent.com/eienzen/blocksnakes/main/victory.mp3"></audio>
+    <script src="./app.js" defer></script>
 </body>
 </html>
